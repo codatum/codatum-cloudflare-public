@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>インシデント対応体制 — 検討結果</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#ffffff; color:#374151; font-family:'Inter',-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif; line-height:1.7; }
+  .container { max-width:960px; margin:0 auto; padding:32px 24px; }
+  h1 { font-size:20px; color:#111827; margin-bottom:4px; }
+  .subtitle { font-size:13px; color:#9ca3af; margin-bottom:32px; }
+  h2 { font-size:16px; color:#1e293b; margin:32px 0 12px; padding-bottom:6px; border-bottom:1px solid #e5e7eb; }
+  h3 { font-size:14px; color:#334155; margin:20px 0 8px; }
+  p, li { font-size:13px; margin-bottom:8px; }
+  strong { color:#111827; }
+  ul { padding-left:20px; margin-bottom:12px; }
+  blockquote { border-left:3px solid #cbd5e1; padding:8px 12px; margin:8px 0 16px; background:#f5f7fa; font-size:12px; color:#64748b; }
+
+  .part-label { font-size:13px; font-weight:700; color:#6b7280; letter-spacing:1px; text-transform:uppercase; margin:40px 0 4px; cursor:pointer; user-select:none; }
+  .part-label::after { content:' ▶'; font-size:10px; opacity:0.4; }
+  .part-label.open::after { content:' ▼'; }
+  .part-content { max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+  .part-content.open { max-height:20000px; }
+
+  .agenda { margin-bottom:32px; }
+  .agenda p { font-size:13px; color:#374151; margin-bottom:12px; }
+  .agenda-list { list-style:none; padding:0; }
+  .agenda-list li { padding:8px 12px; margin-bottom:6px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; font-size:13px; cursor:pointer; }
+  .agenda-list li:hover { background:#f0f0f0; }
+  .agenda-list .num { font-weight:700; color:#6b7280; margin-right:8px; }
+  .agenda-list .desc { font-size:11px; color:#9ca3af; display:block; margin-top:2px; }
+
+  .tag { display:inline-block; padding:1px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+  .tag-decided { background:#dcfce7; color:#16a34a; }
+  .tag-info { background:#e2e8f0; color:#334155; }
+  .tag-warn { background:#fef3c7; color:#d97706; }
+
+  table { width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:12px; }
+  th,td { border:1px solid #e5e7eb; padding:6px 10px; text-align:left; }
+  th { background:#f5f5f5; color:#111827; font-weight:600; }
+  td { color:#374151; }
+  .cell-green { background:#f0fdf4; color:#16a34a; font-weight:600; }
+  .cell-yellow { background:#fffbeb; color:#d97706; font-weight:600; }
+  .cell-red { background:#fef2f2; color:#dc2626; font-weight:600; }
+  .cell-blue { background:#f1f5f9; color:#1e40af; font-weight:600; }
+  .cell-muted { background:#f9fafb; color:#9ca3af; }
+
+  .card { background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:14px 16px; margin:8px 0; }
+  .card-title { font-size:13px; font-weight:600; color:#111827; margin-bottom:6px; }
+  .card p { font-size:12px; color:#6b7280; }
+
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media(max-width:640px) { .grid { grid-template-columns:1fr; } }
+
+  .diagram { background:#f5f7fa; border:1px solid #e0e0e0; border-radius:8px; padding:16px; margin:12px 0; font-family:'Fira Code','SF Mono',monospace; font-size:12px; color:#475569; white-space:pre; overflow-x:auto; line-height:1.5; }
+
+  a { color:#2563eb; text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  .note { font-size:11px; color:#9ca3af; margin-top:4px; }
+
+  .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:12px 0; }
+  .stat-card { background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:14px 16px; text-align:center; }
+  .stat-value { font-size:24px; font-weight:700; color:#059669; }
+  .stat-label { font-size:11px; color:#9ca3af; margin-top:4px; }
+  @media(max-width:640px) { .stat-grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>インシデント対応体制 — 検討結果</h1>
+<p class="subtitle">codatum-skills#8 — 内部向け詳細版</p>
+
+<div class="agenda">
+<p>本資料は、Codatum のインシデント対応体制・品質基準・契約構造・運用事項をまとめた内部向け詳細版です。</p>
+<ul class="agenda-list">
+  <li onclick="openPart('part1')"><span class="num">I.</span> 対応体制 <span class="desc">サポート体制・対応フロー・監視体制</span></li>
+  <li onclick="openPart('part2')"><span class="num">II.</span> 品質基準 <span class="desc">方針・稼働実績・保証範囲</span></li>
+  <li onclick="openPart('part3')"><span class="num">III.</span> 契約・責任範囲 <span class="desc">契約構造・賠償上限・Plaid 伝達範囲</span></li>
+  <li onclick="openPart('part4')"><span class="num">IV.</span> 運用 <span class="desc">アクションアイテム・備忘録</span></li>
+</ul>
+</div>
+
+<!-- ========== I. 対応体制 ========== -->
+<p class="part-label" onclick="togglePart('part1')" id="label-part1">I. 対応体制</p>
+<div class="part-content" id="part1">
+
+<!-- === 1. サポート体制 === -->
+<h2>1. サポート体制</h2>
+
+<blockquote><a href="./org-chart.html">体制図</a></blockquote>
+
+<h3>対応ロール</h3>
+<table>
+  <tr><th>ロール</th><th>責務</th></tr>
+  <tr><td><strong>インフラエンジニア</strong></td><td>インフラ系アラート対応・一次調査</td></tr>
+  <tr><td><strong>アプリケーションエンジニア</strong></td><td>アプリ系エラー対応・一次調査</td></tr>
+  <tr><td><strong>Biz</strong></td><td>コミュニケーション担当・個別顧客連絡判断・緊急対応判断</td></tr>
+  <tr><td><strong>Plaid 窓口</strong></td><td>Plaid 案件の追加コミュニケーション</td></tr>
+</table>
+
+<ul>
+  <li><strong>通常案件</strong>: エンジニア + Biz の <strong>2名体制</strong></li>
+  <li><strong>Plaid 案件</strong>: エンジニア + Biz + Plaid 窓口 の <strong>3名体制</strong></li>
+  <li>明確な当番制・オンコールはなし</li>
+</ul>
+
+<h3>プラン別サポートスピード</h3>
+<table>
+  <tr><th>プラン</th><th>サポート</th><th>返答目標</th></tr>
+  <tr><td><strong>Personal</strong></td><td>サポートドキュメントのみ</td><td class="cell-muted">—</td></tr>
+  <tr><td><strong>Team</strong></td><td>チャットサポート</td><td>3 business days 以内</td></tr>
+  <tr><td><strong>Multi-team</strong></td><td>チャットサポート</td><td>3 business days 以内</td></tr>
+  <tr><td><strong>Enterprise</strong></td><td>優先チャットサポート + 専任サクセスマネージャー</td><td class="cell-green">1 business day 以内</td></tr>
+  <tr><td><strong>再販（Plaid 経由）</strong></td><td>Plaid 1次受け → Codatum 2次対応（#codatum-plaid-support）</td><td class="cell-yellow">1 business day 以内（努力義務）。プラン差なし</td></tr>
+</table>
+
+<h3>サポート範囲 <span class="note">（<a href="https://github.com/codatum/codatum/issues/9883">#9883</a> で決定済み）</span></h3>
+<div class="grid">
+  <div class="card">
+    <div class="card-title" style="color:#16a34a;">範囲内（Codatum が対応するもの）</div>
+    <ul>
+      <li>Codatum の画面操作・設定方法に関する質問</li>
+      <li>Codatum の不具合、エラー、動作不良の調査・対応</li>
+      <li>公式ドキュメントに記載されている機能・挙動に関する確認</li>
+      <li>Codatum の仕様・制約・推奨利用方法に関する説明</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="card-title" style="color:#9ca3af;">範囲外（原則として対応しないこと）</div>
+    <ul>
+      <li>利用者が作成した SQL・クエリロジックの正しさや最適化の相談</li>
+      <li>データ内容そのもの（数値の妥当性、集計結果の意味など）の確認</li>
+      <li>接続先データウェアハウスや外部ツール固有の不具合・仕様に関する調査</li>
+      <li>個別の業務要件に基づく分析設計・レポート設計の代行</li>
+      <li>パフォーマンス改善やデータモデリングに関するコンサルティング</li>
+    </ul>
+  </div>
+</div>
+
+<h3>対応時間帯</h3>
+<table>
+  <tr><th>区分</th><th>時間帯</th><th>サポート返答目標</th><th>エンジニア対応</th></tr>
+  <tr><td class="cell-green">コアタイム</td><td><strong>平日 10:00-18:00 JST</strong></td><td>1 営業日以内（努力義務）</td><td>対応</td></tr>
+  <tr><td class="cell-muted">それ以外</td><td>上記以外・休日</td><td class="cell-muted">ベストエフォート</td><td class="cell-muted">ベストエフォート</td></tr>
+</table>
+
+<!-- === 2. 対応フロー === -->
+<h2>2. 対応フロー</h2>
+
+<p>連絡窓口は以下の通り。Issue は全て <a href="https://github.com/codatum/codatum-support">codatum-support</a> で管理する。</p>
+
+<table>
+  <tr><th>起票元</th><th>Slack チャンネル</th><th>対象</th></tr>
+  <tr><td><strong>アラート</strong></td><td>#codatum_alert / #codatum_warning</td><td>Datadog / Sentry / GCM</td></tr>
+  <tr><td><strong>Intercom</strong></td><td>#notification_support_intercom</td><td>一般顧客の問い合わせ</td></tr>
+  <tr><td><strong>Slack Connect</strong></td><td>顧客共有チャンネル</td><td>既存顧客の直接連絡</td></tr>
+  <tr><td><strong>Plaid 再販</strong></td><td>#codatum-plaid-support</td><td>Plaid 経由の問い合わせ・インシデント報告</td></tr>
+  <tr><td><strong>内部報告</strong></td><td>—</td><td>チームメンバーが発見</td></tr>
+</table>
+
+<blockquote><a href="./incident-flow.html">対応フロー詳細図</a></blockquote>
+
+<h3>通常サポート（顧客起点）</h3>
+<p>顧客やパートナーからの問い合わせを受けて対応するケース。</p>
+<table>
+  <tr><th style="width:160px;"></th><th>内容</th></tr>
+  <tr><td><strong>受付</strong></td><td>各チャンネルから Issue 作成（codatum-support）</td></tr>
+  <tr><td><strong>Assign</strong></td><td>エンジニア + Biz。Plaid 案件は + Plaid 窓口</td></tr>
+  <tr><td><strong>調査・回答</strong></td><td>内容を確認し、サポート範囲内であれば調査</td></tr>
+  <tr><td><strong>返答</strong></td><td>起票元のチャンネル / スレッドで回答</td></tr>
+</table>
+
+<h3>アラート起点（システム検知）</h3>
+<p>監視システムがアラートを発報し、調査から対応に入るケース。</p>
+<table>
+  <tr><th style="width:160px;"></th><th>内容</th></tr>
+  <tr><td><strong>検知</strong></td><td>Datadog / Sentry / GCM がアラート発報 → #codatum_alert / #codatum_warning</td></tr>
+  <tr><td><strong>Issue 作成</strong></td><td>codatum-support に Issue 作成</td></tr>
+  <tr><td><strong>Assign</strong></td><td>エンジニア + Biz。Plaid 影響がある場合は + Plaid 窓口</td></tr>
+  <tr><td><strong>一次調査</strong></td><td>誤検知なら Alert 調整して Issue close</td></tr>
+</table>
+
+<h3>判断フロー（共通）</h3>
+<p>一次調査の結果、実問題と判断された場合の分岐:</p>
+
+<p><strong>インシデント判定</strong>: 機能の主体を損なうか？</p>
+<ul>
+  <li><strong>バグ</strong> → 通常の開発サイクルで修正。Plaid 窓口 Assign 済みなら Slack スレッドに結果報告</li>
+  <li><strong>インシデント</strong> → 影響判断マトリクスへ</li>
+</ul>
+
+<p><strong>影響判断マトリクス</strong>:</p>
+<table>
+  <tr><th></th><th>一過性（30分以内に復旧）</th><th>継続（30分超）</th></tr>
+  <tr><td><strong>少数（1-2社）</strong></td><td>軽微 → 通常対応</td><td>軽微 → 通常対応</td></tr>
+  <tr><td><strong>多数ユーザー</strong></td><td>軽微 → 通常対応</td><td class="cell-red">緊急対応</td></tr>
+  <tr><td><strong>全ユーザー</strong></td><td>軽微 → 通常対応</td><td class="cell-red">緊急対応</td></tr>
+</table>
+
+<p><strong>通常対応</strong>: 差し込みで修正 → Plaid 窓口 Assign 済みなら Slack スレッドに結果報告 → Issue close</p>
+
+<p><strong>緊急対応</strong>:</p>
+<table>
+  <tr><th style="width:160px;"></th><th>内容</th></tr>
+  <tr><td><strong>体制</strong></td><td>#dev 群がり + Biz 担当 + Plaid 窓口 Assign</td></tr>
+  <tr><td><strong>StatusPage 公開</strong></td><td>Incident を公開（<a href="https://status.codatum.com">status.codatum.com</a>）</td></tr>
+  <tr><td><strong>Plaid への通知</strong></td><td>Slack #codatum-plaid-support に状況を投稿</td></tr>
+  <tr><td><strong>顧客への連絡</strong></td><td>直販: Biz が判断。再販: Plaid 側が実施（Codatum は Plaid への共有までが責務）</td></tr>
+  <tr><td><strong>復旧</strong></td><td>StatusPage: Resolved</td></tr>
+  <tr><td><strong>Postmortem</strong></td><td>原因・影響・対策をまとめる</td></tr>
+  <tr><td><strong>Plaid への報告</strong></td><td>Slack スレッドに復旧報告と Postmortem を共有</td></tr>
+  <tr><td><strong>完了</strong></td><td>Issue close</td></tr>
+</table>
+
+<h3>補足: モニタリング・検知体制</h3>
+<ul>
+  <li><strong>多層監視</strong>: Datadog 68 モニター稼働中（GKE クラスタ 12件、Cloudflare 6件、ログ異常検知 6件、API/フロントエンド 5件、MongoDB 3件、Redis 4件、LLM メトリクス 3件 等）</li>
+  <li><strong>エラートラッキング</strong>: Sentry によるアプリケーションレベルのエラー監視</li>
+  <li><strong>アラート即時通知</strong>: Slack #codatum_alert（Alert）、#codatum_warning（Warning）に自動通知</li>
+  <li><strong>デプロイ前ヘルスチェック</strong>: Deploy Gate（Datadog Monitor + Synthetics テスト）により、本番デプロイ前に自動で品質チェック。失敗時はデプロイをブロック</li>
+  <li><strong>ステータス公開</strong>: <a href="https://status.codatum.com">status.codatum.com</a>（StatusPal）でサービス状態をリアルタイム公開、メール購読可能</li>
+</ul>
+
+</div>
+
+<!-- ========== II. 品質基準 ========== -->
+<p class="part-label" onclick="togglePart('part2')" id="label-part2">II. 品質基準</p>
+<div class="part-content" id="part2">
+
+<!-- === 3. 方針 === -->
+<h2>3. 方針</h2>
+
+<p>数値保証付き SLA は設けず、<strong>免責事項＋ベストエフォート</strong>の体制整備で進める。同規模 BI ツール（Metabase, HEX）も SLA なし・免責のみが主流。現行利用規約で免責は既にカバー済み。</p>
+<p>BI ツールは業務遂行の補助ツールであり、基幹システム（決済・認証等）と比べて業務上のクリティカルさが相対的に低い。BI ツールが停止しても業務そのものが止まるわけではなく、意思決定の遅延にとどまる。</p>
+
+<!-- === 4. 稼働実績 === -->
+<h2>4. 稼働実績</h2>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-value">99.87%</div>
+    <div class="stat-label">稼働率（90 日間）</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">2 件</div>
+    <div class="stat-label">過去のインシデント</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">68</div>
+    <div class="stat-label">監視モニター数</div>
+  </div>
+</div>
+
+<table>
+  <tr><th>日時</th><th>事象</th><th>影響</th><th>StatusPage</th></tr>
+  <tr><td>2025/11/18</td><td>Cloudflare 障害（外部起因）</td><td>全機能ダウン 約 2h45m</td><td>掲載</td></tr>
+  <tr><td>2026/01/16</td><td>Auth サーバー応答遅延</td><td>約 15 分</td><td>掲載</td></tr>
+</table>
+<p class="note">Cloudflare 障害時は検知 → StatusPage 掲載 → 顧客個別連絡まで実際に運用実績あり</p>
+
+<!-- === 5. 保証範囲 === -->
+<h2>5. 保証範囲</h2>
+
+<h3>確約 <span class="tag tag-decided">保証</span></h3>
+<ul>
+  <li>インシデント対応体制の運用（上記 I. のフロー）</li>
+  <li>StatusPage によるステータス公開</li>
+</ul>
+
+<h3>ベストエフォート <span class="tag tag-warn">努力義務</span></h3>
+<ul>
+  <li>一次返答目標: <strong>1 business day</strong>（サブライセンス契約 第8条「合理的な努力」）</li>
+  <li>営業時間外の対応</li>
+</ul>
+
+<h3>保証しないこと</h3>
+<ul>
+  <li>稼働率の数値保証</li>
+  <li>復旧時間の保証</li>
+  <li>外部インフラ起因の障害に対する責任</li>
+  <li>サポート範囲外の項目</li>
+  <li>損害賠償は「当社がサービス契約者から受領した直近1年間の利用料金等総額」が上限（利用規約 第34条）。再販エンドクライアントに対しては実質 0〜10,000 円</li>
+</ul>
+
+</div>
+
+<!-- ========== III. 契約・責任範囲 ========== -->
+<p class="part-label" onclick="togglePart('part3')" id="label-part3">III. 契約・責任範囲</p>
+<div class="part-content" id="part3">
+
+<!-- === 6. 契約構造 === -->
+<h2>6. 契約構造</h2>
+
+<h3>3者間構造（A+B）</h3>
+<p>エンドクライアントは Codatum と Plaid の両方と契約関係を持つ。</p>
+
+<div class="diagram">エンドクライアント ── Codatum 利用規約 ──→ Codatum
+エンドクライアント ── Plaid 独自契約   ──→ Plaid
+Codatum            ── 再販契約         ──→ Plaid</div>
+
+<table>
+  <tr><th>契約</th><th>当事者</th><th>内容</th></tr>
+  <tr><td><strong>Codatum 利用規約</strong></td><td>エンドクライアント ↔ Codatum</td><td>免責条項・損害賠償上限が直接適用。SLA なし</td></tr>
+  <tr><td><strong>Plaid 独自契約</strong></td><td>エンドクライアント ↔ Plaid</td><td>Plaid が独自に定める内容</td></tr>
+  <tr><td><strong>再販契約（サブライセンス契約）</strong></td><td>Codatum ↔ Plaid</td><td>卸率 70%、月額サポート 42,000 円。第8条: サポート業務、第20条: 損害賠償上限</td></tr>
+</table>
+
+<p>エンドクライアントが Codatum 利用規約に直接同意するため、Codatum の免責条項（第35条）が直接適用される。</p>
+
+<h3>賠償上限</h3>
+<table>
+  <tr><th>経路</th><th>上限</th></tr>
+  <tr><td><strong>エンドクライアント → Codatum</strong></td><td>実質 0 円（Codatum が直接受領する金額は 0）</td></tr>
+  <tr><td><strong>Plaid → Codatum</strong>（求償）</td><td><strong>Plaid が Codatum に支払った直近 1 年間の利用料金</strong></td></tr>
+</table>
+<p class="note">サブライセンス契約 第20条により、Codatum の賠償上限は利用規約の範囲に連動。Back-to-Back の整合性は契約上確保済み。</p>
+
+<h3>外部インフラの免責対象</h3>
+<p>Codatum のサービスが依存しており、障害時に Codatum の責任範囲外となるもの（コードベースの 2026-03-30 時点の確認結果）:</p>
+
+<p><strong>コア基盤（サービス稼働に直結）:</strong></p>
+<ul>
+  <li>GCP / GKE（asia-northeast1）、MongoDB、Redis、Cloudflare、Temporal.io</li>
+</ul>
+
+<p><strong>付随サービス（一部機能に影響）:</strong></p>
+<ul>
+  <li>Resend、Stripe、Sentry、Datadog、Intercom、Contentful、Vercel</li>
+</ul>
+
+<p><strong>AI モデルプロバイダ（AI 機能に影響）:</strong></p>
+<ul>
+  <li>OpenAI、Anthropic、Google Vertex AI、Azure OpenAI</li>
+</ul>
+
+<p><strong>顧客接続先（Codatum の責任範囲外）:</strong></p>
+<ul>
+  <li>BigQuery, Snowflake, Databricks, Redshift 等</li>
+</ul>
+
+<!-- === 7. Plaid が伝えてよい範囲 === -->
+<h2>7. Plaid がエンドクライアントに伝えてよい範囲</h2>
+
+<table>
+  <tr><th>区分</th><th>Plaid → エンドクライアントへの伝達</th><th>例</th></tr>
+  <tr>
+    <td><strong>Codatum が保証しているもの</strong></td>
+    <td class="cell-green">そのまま保証可能</td>
+    <td>サポート時間帯（平日 10:00-18:00 JST）、StatusPage によるステータス公開、インシデント対応体制の存在</td>
+  </tr>
+  <tr>
+    <td><strong>ベストエフォートのもの</strong></td>
+    <td class="cell-yellow">「目標」「努力義務」としてなら伝達可能。確約として保証すると Plaid のリスク</td>
+    <td>一次返答スピード（1BD は努力義務）、営業時間外の対応</td>
+  </tr>
+  <tr>
+    <td><strong>Codatum の実績情報</strong></td>
+    <td class="cell-blue">「実績値」として伝達可能。「保証」として提示すると Plaid のリスク</td>
+    <td>稼働率 99.87%（実績値）、多層監視体制（68 モニター）、過去インシデント 2 件</td>
+  </tr>
+  <tr>
+    <td><strong>Codatum が保証していないもの</strong></td>
+    <td class="cell-red">保証すると Plaid 自身のリスク（Codatum に求償不可）</td>
+    <td>稼働率の数値保証（99.9% 等）、復旧時間の保証（4時間以内等）</td>
+  </tr>
+</table>
+
+</div>
+
+<!-- ========== IV. 運用 ========== -->
+<p class="part-label" onclick="togglePart('part4')" id="label-part4">IV. 運用</p>
+<div class="part-content" id="part4">
+
+<!-- === 8. アクションアイテム === -->
+<h2>8. アクションアイテム</h2>
+
+<table>
+  <tr><th>#</th><th>作業内容</th><th>状態</th></tr>
+  <tr><td>1</td><td>Slack #codatum-plaid-support チャンネル作成</td><td class="cell-yellow">未着手</td></tr>
+  <tr><td>2</td><td>GitHub codatum-support リポジトリ作成</td><td class="cell-green">完了（Issue テンプレート・ラベル設定済み）</td></tr>
+  <tr><td>3</td><td>オンコール / 当番制の検討</td><td class="cell-yellow">未着手</td></tr>
+</table>
+
+<!-- === 9. 備忘録 === -->
+<h2>9. 備忘録（優先度低・別途対応）</h2>
+
+<ul>
+  <li>Postmortem 運用（テンプレート・運用ルール）</li>
+  <li>BCP / 障害時対応マニュアルの策定</li>
+  <li>StatusPage Incident テンプレートの整備</li>
+</ul>
+
+</div>
+
+<!-- === 関連資料 === -->
+<h2>関連資料</h2>
+<ul>
+  <li><a href="./for-plaid.html">Plaid 向け資料</a> / <a href="./for-plaid.html">HTML 版</a></li>
+  <li><a href="./incident-flow.html">対応フロー詳細図</a></li>
+  <li><a href="./org-chart.html">体制図</a></li>
+  <li><a href="https://github.com/codatum/codatum-support">codatum-support リポジトリ</a>（Issue テンプレート・対応フロー）</li>
+  <li><a href="https://status.codatum.com">StatusPage</a></li>
+  <li><a href="https://github.com/codatum/codatum/blob/main/docs/status-page.md">StatusPage 運用方針</a></li>
+  <li><a href="https://codatum.com/terms">利用規約（日本語）</a></li>
+  <li><a href="https://docs.google.com/document/d/1TQeBCSpAvWdYvOR5fk7POdKKSz6xHRLD/edit">サブライセンス契約（交渉中）</a> — 第8条（サポート業務）、第20条（損害賠償）</li>
+</ul>
+
+</div>
+
+<script>
+function togglePart(id) {
+  var el = document.getElementById(id);
+  var label = document.getElementById('label-' + id);
+  el.classList.toggle('open');
+  label.classList.toggle('open');
+}
+function openPart(id) {
+  var el = document.getElementById(id);
+  var label = document.getElementById('label-' + id);
+  if (!el.classList.contains('open')) {
+    el.classList.add('open');
+    label.classList.add('open');
+  }
+  label.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>インシデント対応体制 — 関係図</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #ffffff; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; }
+  #root { width: 100vw; height: 100vh; }
+  .react-flow__attribution { display: none !important; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+    "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+    "@xyflow/react": "https://esm.sh/@xyflow/react@12.6.0?external=react,react-dom"
+  }
+}
+</script>
+<link href="https://esm.sh/@xyflow/react@12.6.0/dist/style.css" rel="stylesheet" />
+<style>
+  /* --- Node styles --- */
+  .rf-node {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: center;
+    color: #111827;
+    min-width: 120px;
+  }
+  .rf-node .label { font-weight: 600; font-size: 13px; }
+  .rf-node .sub { font-size: 10px; color: #6b7280; margin-top: 2px; }
+
+  .rf-node-eng     { background: #f0fdf4; border: 2px solid #15803d; }
+  .rf-node-biz     { background: #f9fafb; border: 2px solid #6b7280; }
+  .rf-node-plaid-t { background: #f0f9ff; border: 2px solid #1d4ed8; }
+  .rf-node-ext     { background: #f9fafb; border: 2px solid #94a3b8; }
+  .rf-node-plaid-c { background: #f0f9ff; border: 2px solid #1d4ed8; }
+  .rf-node-mgr     { background: #fffbeb; border: 2px solid #b45309; }
+
+  /* --- Edge labels --- */
+  .react-flow__edge-text { font-size: 10px !important; fill: #64748b !important; }
+  .react-flow__edge-textbg { fill: #ffffff !important; }
+
+  /* --- Controls --- */
+  .react-flow__controls { background: #f5f5f5 !important; border: 1px solid #e0e0e0 !important; border-radius: 8px !important; }
+  .react-flow__controls button { background: #f5f5f5 !important; color: #374151 !important; border-bottom: 1px solid #e0e0e0 !important; }
+  .react-flow__controls button:hover { background: #e5e7eb !important; }
+  .react-flow__controls svg { fill: #374151 !important; }
+  .react-flow__minimap { background: #f5f7fa !important; border: 1px solid #e0e0e0 !important; border-radius: 8px !important; }
+
+  /* --- Panels --- */
+  .panel-info {
+    background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px;
+    padding: 12px 16px; font-family: 'Inter', -apple-system, sans-serif;
+  }
+  .panel-info h1 { font-size: 14px; color: #111827; font-weight: 600; margin-bottom: 2px; }
+  .panel-info p { font-size: 11px; color: #94a3b8; }
+
+  .panel-legend {
+    background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px;
+    padding: 10px 14px; display: flex; flex-direction: column; gap: 5px;
+    font-size: 11px; color: #6b7280; font-family: 'Inter', -apple-system, sans-serif;
+  }
+  .legend-row { display: flex; align-items: center; gap: 8px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+</style>
+<script type="module">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import {
+  ReactFlow, Controls, Background, MiniMap, Panel,
+  useNodesState, useEdgesState,
+} from '@xyflow/react';
+
+const h = React.createElement;
+
+// ============================================================
+// 座標設計 (figure-designer原則: 数学的に事前計算)
+//
+// 構造: 4レイヤー水平フロー
+//   Layer 0: エンジニア (中央Y)
+//   Layer 1: Biz (上), Plaid担当 (下)
+//   Layer 2: 一般顧客 (上), Plaid (下)
+//   Layer 3: エンドクライアント (下)
+//
+// グループ:
+//   Codatum (実線) = Layer 0–1
+//   外部    (破線) = Layer 2–3
+//
+// レイアウト数値:
+//   NODE_W = 180px (min-width)
+//   LAYER_GAP = 260px (レイヤー間等間隔)
+//   ROW_GAP = 140px (上下段の間隔)
+//   GROUP_INTER_GAP = 80px (グループ間の呼吸)
+//
+//   Layer X: 0, 260, 580, 840 (Layer2以降 +60px シフトでグループ間80px確保)
+//   Row Y:  top=0, bottom=140, center=70
+// ============================================================
+
+const NODE_W = 140;  // 縮小後の推定レンダリング幅
+const NODE_H = 55;   // 縮小後の推定レンダリング高さ
+const LAYER_GAP = 260; // レイヤー間距離（arcの空間を確保）
+const GROUP_GAP = 120; // グループ間の呼吸
+
+// Group box padding — 余白の原則: ノードとbox端に十分なマージン
+const GRP_PAD = 36;
+const GRP_PAD_TOP = 46;
+
+// Layer X (絶対座標)
+const LX0 = 0;
+const LX1 = LAYER_GAP;                                     // 260
+const LX2 = LX1 + NODE_W + GRP_PAD + GROUP_GAP + GRP_PAD;  // 592
+const LX3 = LX2 + LAYER_GAP;                                // 852
+
+// Row Y
+const ROW_MGR = -90;  // 責任者行 (上=上位概念)
+const ROW_TOP = 0;    // Biz / 顧客
+const ROW_BOT = 120;  // Plaid担当 / Plaid
+const ROW_MID = 60;   // エンジニア (上下中央)
+
+// Codatum group: 責任者を含むため上方に拡張
+const COD_X = LX0 - GRP_PAD;                              // -36
+const COD_Y = ROW_MGR - GRP_PAD_TOP;                      // -90-46 = -136
+const COD_W = (LX1 + NODE_W + GRP_PAD) - COD_X;          // 260+140+36+36 = 472
+const COD_H = (ROW_BOT + NODE_H + GRP_PAD) - COD_Y;      // 120+55+36+136 = 347
+
+// External group: ROW_TOP〜ROW_BOTのみ (幅は対称)
+const EXT_X = LX2 - GRP_PAD;                              // 556
+const EXT_Y = ROW_TOP - GRP_PAD_TOP;                      // -46
+const EXT_W = (LX3 + NODE_W + GRP_PAD) - EXT_X;          // 472
+const EXT_H = (ROW_BOT + NODE_H + GRP_PAD) - EXT_Y;      // 257
+
+// --- Helper ---
+function mkNode(id, label, sub, cls, absX, absY) {
+  return {
+    id,
+    _absX: absX, _absY: absY,  // for relative calc
+    sourcePosition: 'right',
+    targetPosition: 'left',
+    data: {
+      label: h('div', { className: `rf-node rf-node-${cls}` },
+        h('div', { className: 'label' }, label),
+        sub ? h('div', { className: 'sub' }, sub) : null,
+      ),
+    },
+    type: 'default',
+    style: { background: 'transparent', border: 'none', padding: 0, width: 'auto' },
+  };
+}
+
+// --- Group boxes ---
+const groups = [
+  {
+    id: 'grp_codatum',
+    position: { x: COD_X, y: COD_Y },
+    data: { label: '' },
+    type: 'group',
+    zIndex: -1,
+    style: {
+      width: COD_W, height: COD_H,
+      background: 'rgba(243,244,246,0.6)',
+      border: '1.5px solid #e2e8f0',
+      borderRadius: '14px',
+    },
+  },
+  {
+    id: 'grp_external',
+    position: { x: EXT_X, y: EXT_Y },
+    data: { label: '' },
+    type: 'group',
+    zIndex: -1,
+    style: {
+      width: EXT_W, height: EXT_H,
+      background: 'rgba(249,250,251,0.4)',
+      border: '1.5px dashed #e2e8f0',
+      borderRadius: '14px',
+    },
+  },
+];
+
+// --- Group labels ---
+const groupLabels = [
+  {
+    id: 'lbl_codatum',
+    position: { x: 16, y: 14 },
+    parentId: 'grp_codatum', extent: 'parent',
+    data: { label: h('span', { style: { fontSize: 12, fontWeight: 600, color: '#94a3b8', letterSpacing: '0.5px' } }, 'Codatum') },
+    type: 'default', selectable: false, draggable: false,
+    style: { background: 'transparent', border: 'none', padding: 0, width: 'auto', pointerEvents: 'none' },
+  },
+  {
+    id: 'lbl_external',
+    position: { x: 16, y: 14 },
+    parentId: 'grp_external', extent: 'parent',
+    data: { label: h('span', { style: { fontSize: 12, fontWeight: 600, color: '#94a3b8', letterSpacing: '0.5px' } }, '外部') },
+    type: 'default', selectable: false, draggable: false,
+    style: { background: 'transparent', border: 'none', padding: 0, width: 'auto', pointerEvents: 'none' },
+  },
+];
+
+// --- Codatum nodes (relative to grp_codatum) ---
+// 責任者: グループ上部中央 (上=上位概念)
+// 水平中央 = (LX0 + LX1 + NODE_W) / 2 - NODE_W / 2 = 130
+const codatumRaw = [
+  mkNode('mgr',     '事業責任者', '意思決定・エスカレーション',    'mgr',     130, ROW_MGR),
+  mkNode('eng',     'SRE (+ App) エンジニア', '調査・修正\nStatusPage 更新',  'eng',     LX0, ROW_MID),
+  mkNode('biz',     'Biz',        'コミュニケーション',           'biz',     LX1, ROW_TOP),
+  mkNode('plaid_t', 'Plaid担当',  'Plaid 窓口',                  'plaid-t', LX1, ROW_BOT),
+];
+const codatumNodes = codatumRaw.map(n => ({
+  ...n,
+  position: { x: n._absX - COD_X, y: n._absY - COD_Y },
+  parentId: 'grp_codatum', extent: 'parent',
+}));
+
+// --- External nodes (relative to grp_external) ---
+const externalRaw = [
+  mkNode('customer', '顧客',   '直販経由',       'ext',     LX2, ROW_TOP),
+  mkNode('plaid_c',  'Plaid', '再販パートナー', 'plaid-c', LX2, ROW_BOT),
+  mkNode('ec',       '顧客',  '再販経由',       'ext',     LX3, ROW_BOT),
+];
+const externalNodes = externalRaw.map(n => ({
+  ...n,
+  position: { x: n._absX - EXT_X, y: n._absY - EXT_Y },
+  parentId: 'grp_external', extent: 'parent',
+}));
+
+const initialNodes = [...groups, ...groupLabels, ...codatumNodes, ...externalNodes];
+
+// --- Edges ---
+// 全て左→右の水平フロー。smoothstepで自然な経路。
+const edgeBase = {
+  type: 'smoothstep',
+  style: { stroke: '#94a3b8', strokeWidth: 1.5 },
+  labelStyle: { fill: '#64748b', fontSize: 10 },
+  labelBgStyle: { fill: '#ffffff' },
+};
+
+// Edge label: 1行 (channel付き)
+function el(main, channel) {
+  return `${main} (${channel})`;
+}
+
+const initialEdges = [
+  // Layer 0 → Layer 1 (エンジニアから分岐)
+  { id: 'e-eng-biz',     source: 'eng',     target: 'biz',      label: '連携', ...edgeBase },
+  { id: 'e-eng-plaid_t', source: 'eng',     target: 'plaid_t',  label: '連携', ...edgeBase },
+
+  // Layer 1 → Layer 2 (グループを跨ぐ)
+  { id: 'e-biz-cust',    source: 'biz',     target: 'customer', label: el('報告・連絡', 'Intercom / Slack'), animated: true, ...edgeBase },
+  { id: 'e-pt-plaid',    source: 'plaid_t', target: 'plaid_c',  label: el('報告・連絡', 'Slack'),    animated: true, ...edgeBase },
+
+  // Layer 2 → Layer 3
+  { id: 'e-plaid-ec',    source: 'plaid_c', target: 'ec',       label: el('報告・連絡', 'Plaid が連絡'),     animated: true, ...edgeBase },
+];
+
+// --- App ---
+function App() {
+  const [nodes, , onNodesChange] = useNodesState(initialNodes);
+  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+
+  return h(ReactFlow, {
+    nodes, edges, onNodesChange, onEdgesChange,
+    fitView: true,
+    fitViewOptions: { padding: 0.25 },
+    defaultEdgeOptions: { type: 'smoothstep' },
+    style: { background: '#ffffff' },
+    minZoom: 0.4, maxZoom: 2,
+    proOptions: { hideAttribution: true },
+  },
+    h(Controls, { position: 'bottom-right' }),
+    h(Background, { color: '#f1f5f9', gap: 20, size: 1 }),
+    h(MiniMap, {
+      position: 'bottom-left',
+      nodeColor: () => '#64748b',
+      maskColor: 'rgba(255,255,255,0.7)',
+      style: { width: 140, height: 90 },
+    }),
+    h(Panel, { position: 'top-left' },
+      h('div', { className: 'panel-info' },
+        h('h1', null, 'インシデント対応体制 — 関係図'),
+        h('p', null, 'codatum-skills#8 — ドラッグ・ズーム操作可能'),
+      ),
+    ),
+    h(Panel, { position: 'top-right' },
+      h('div', { className: 'panel-legend' },
+        h('div', { className: 'legend-row' }, h('div', { className: 'legend-dot', style: { background: '#b45309' } }), '事業責任者'),
+        h('div', { className: 'legend-row' }, h('div', { className: 'legend-dot', style: { background: '#15803d' } }), 'SRE (+ App)'),
+        h('div', { className: 'legend-row' }, h('div', { className: 'legend-dot', style: { background: '#6b7280' } }), 'Biz'),
+        h('div', { className: 'legend-row' }, h('div', { className: 'legend-dot', style: { background: '#1d4ed8' } }), 'Plaid担当 / Plaid'),
+        h('div', { className: 'legend-row' }, h('div', { className: 'legend-dot', style: { background: '#94a3b8' } }), '外部'),
+        h('div', { style: { borderTop: '1px solid #e0e0e0', paddingTop: 6, marginTop: 4, fontSize: 10, color: '#6b7280' } },
+          '通常: エンジニア + Biz（2名）',
+          h('br'),
+          'Plaid: + Plaid担当（3名）',
+        ),
+      ),
+    ),
+  );
+}
+
+createRoot(document.getElementById('root')).render(h(App));
+</script>
+</body>
+</html>

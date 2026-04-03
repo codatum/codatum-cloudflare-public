@@ -1,0 +1,10 @@
+name = "codatum-skills"
+main = "worker/index.js"
+compatibility_date = "2024-09-23"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[vars]
+GITHUB_REPO = "codatum/kodatamu"

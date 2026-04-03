@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>インシデント対応フロー（詳細）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #ffffff; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; }
+  #root { width: 100vw; height: 100vh; }
+  .react-flow__attribution { display: none !important; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+    "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+    "@xyflow/react": "https://esm.sh/@xyflow/react@12.6.0?external=react,react-dom",
+    "@dagrejs/dagre": "https://esm.sh/@dagrejs/dagre@1.1.4"
+  }
+}
+</script>
+<link href="https://esm.sh/@xyflow/react@12.6.0/dist/style.css" rel="stylesheet" />
+<style>
+  .rf-node {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+    color: #374151;
+    white-space: nowrap;
+  }
+  .rf-node .label { font-weight: 600; font-size: 13px; }
+  .rf-node .sub { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+
+  .rf-node-detect   { background: #f8fafc; border: 1.5px solid #64748b; color: #374151; }
+  .rf-node-process   { background: #f8fafc; border: 1.5px solid #64748b; }
+  .rf-node-decision  { background: #f9fafb; border: 1.5px solid #6b7280; border-radius: 12px; }
+  .rf-node-emergency { background: #fef2f2; border: 1.5px solid #b91c1c; color: #b91c1c; }
+  .rf-node-minor     { background: #fffbeb; border: 1.5px solid #b45309; color: #b45309; }
+  .rf-node-close     { background: #f0fdf4; border: 1.5px solid #15803d; color: #15803d; }
+  .rf-node-issue     { background: #fffbeb; border: 1.5px solid #b45309; color: #b45309; }
+
+  .react-flow__edge-text { font-size: 10px !important; fill: #64748b !important; }
+  .react-flow__edge-textbg { fill: #ffffff !important; }
+  .react-flow__controls { background: #f5f5f5 !important; border: 1px solid #e0e0e0 !important; border-radius: 8px !important; }
+  .react-flow__controls button { background: #f5f5f5 !important; color: #374151 !important; border-bottom: 1px solid #e0e0e0 !important; }
+  .react-flow__controls button:hover { background: #e5e7eb !important; }
+  .react-flow__controls svg { fill: #374151 !important; }
+  .react-flow__minimap { background: #f5f7fa !important; border: 1px solid #e0e0e0 !important; border-radius: 8px !important; }
+
+  .panel-info {
+    background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px;
+    padding: 12px 16px; font-family: 'Inter', -apple-system, sans-serif;
+  }
+  .panel-info h1 { font-size: 14px; color: #111827; font-weight: 600; margin-bottom: 2px; }
+  .panel-info p { font-size: 11px; color: #94a3b8; }
+</style>
+<script type="module">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import {
+  ReactFlow, Controls, Background, MiniMap, Panel,
+  useNodesState, useEdgesState,
+} from '@xyflow/react';
+import dagre from '@dagrejs/dagre';
+
+const h = React.createElement;
+
+// --- Data ---
+const NODE_W = 220;
+const NODE_H = 60;
+
+const rawNodes = [
+  // 検知
+  { id: 'd1', label: 'Datadog / Sentry / GCM', sub: '#codatum_alert · #codatum_warning', cls: 'detect', w: 260 },
+  { id: 'd2', label: 'Intercom',               sub: '#notification_support_intercom',    cls: 'detect' },
+  { id: 'd3', label: 'Slack Connect',           sub: '顧客共有チャンネル',                 cls: 'detect' },
+  { id: 'd4', label: 'Plaid 報告',              sub: '#codatum-plaid-support',            cls: 'detect' },
+  { id: 'plaid_assign', label: 'Plaid 窓口 Assign',  sub: 'Plaid担当を追加',                 cls: 'process' },
+
+  // Issue → 調査
+  { id: 'issue',  label: 'Issue 作成',               sub: 'codatum-alert / codatum-support', cls: 'issue' },
+  { id: 'assign', label: 'エンジニア + Biz を Assign', cls: 'process' },
+  { id: 'inv',    label: '一次調査',                  cls: 'process' },
+
+  // 判定①
+  { id: 'chk1', label: '① 誤検知判定', cls: 'decision' },
+  { id: 'adj',  label: 'Alert 調整', cls: 'process' },
+  { id: 'cl1',  label: 'Issue close', cls: 'close' },
+
+  // 判定②
+  { id: 'chk2', label: '② インシデント判定', cls: 'decision' },
+  { id: 'bug',  label: 'バグ → 通常開発で修正',    cls: 'process' },
+  { id: 'bug_plaid', label: 'Plaid 窓口 Assign？', cls: 'decision' },
+  { id: 'bug_notify', label: 'Slack スレッドに結果報告', sub: '#codatum-plaid-support', cls: 'process' },
+  { id: 'cl2',  label: 'Issue close',              cls: 'close' },
+
+  // 判定③
+  { id: 'mat', label: '③ 影響判断マトリクス', cls: 'decision', w: 240 },
+
+  // 軽微
+  { id: 'minor', label: '軽微インシデント',  sub: '少数 or 一過性', cls: 'minor' },
+  { id: 'fix_n', label: '差し込みで修正',    cls: 'process' },
+  { id: 'minor_plaid', label: 'Plaid 窓口 Assign？', cls: 'decision' },
+  { id: 'minor_notify', label: 'Slack スレッドに結果報告', sub: '#codatum-plaid-support', cls: 'process' },
+  { id: 'cl3',   label: 'Issue close',       cls: 'close' },
+
+  // インシデント
+  { id: 'major',     label: 'インシデント',        sub: '多数〜全 かつ 継続（30分超）', cls: 'emergency' },
+  { id: 'emergency', label: '緊急対応開始',         sub: '#dev 群がり + Biz担当 + Plaid窓口 Assign',  cls: 'emergency', w: 300 },
+  { id: 'sp1',       label: 'StatusPage: Incident', cls: 'process' },
+
+  // 個別連絡
+  { id: 'chk3',    label: '④ 個別顧客連絡？',   cls: 'decision' },
+  { id: 'contact', label: '個別顧客連絡',        sub: 'Biz が実施',          cls: 'process' },
+  { id: 'plaid_c', label: 'Plaid に状況共有',    sub: '顧客への連絡は Plaid 側',  cls: 'process' },
+
+  // 復旧
+  { id: 'recover', label: '復旧確認',                cls: 'process' },
+  { id: 'sp2',     label: 'StatusPage: Resolved',     cls: 'close' },
+  { id: 'plaid_resolve', label: 'Plaid に復旧報告 + Postmortem 共有', sub: '#codatum-plaid-support', cls: 'process', w: 300 },
+  { id: 'pm',      label: 'Postmortem 作成',          cls: 'process' },
+  { id: 'sp3',     label: 'StatusPage: Postmortem',    cls: 'close' },
+  { id: 'cl4',     label: 'Issue close',              cls: 'close' },
+];
+
+const rawEdges = [
+  // 検知 → Issue
+  { s: 'd1', t: 'issue' }, { s: 'd2', t: 'issue' }, { s: 'd3', t: 'issue' },
+  { s: 'd4', t: 'plaid_assign' }, { s: 'plaid_assign', t: 'issue' },
+  { s: 'issue', t: 'assign' },
+  { s: 'assign', t: 'inv' },
+  { s: 'inv', t: 'chk1' },
+
+  // ①
+  { s: 'chk1', t: 'adj',  label: '誤検知' },
+  { s: 'adj',  t: 'cl1' },
+  { s: 'chk1', t: 'chk2', label: '実問題' },
+
+  // ②
+  { s: 'chk2', t: 'bug', label: 'バグ' },
+  { s: 'bug',  t: 'bug_plaid' },
+  { s: 'bug_plaid', t: 'bug_notify', label: 'Yes' },
+  { s: 'bug_notify', t: 'cl2' },
+  { s: 'bug_plaid', t: 'cl2', label: 'No' },
+  { s: 'chk2', t: 'mat', label: 'インシデント' },
+
+  // ③
+  { s: 'mat', t: 'minor', label: '少数 or 一過性' },
+  { s: 'minor', t: 'fix_n' },
+  { s: 'fix_n', t: 'minor_plaid' },
+  { s: 'minor_plaid', t: 'minor_notify', label: 'Yes' },
+  { s: 'minor_notify', t: 'cl3' },
+  { s: 'minor_plaid', t: 'cl3', label: 'No' },
+  { s: 'mat', t: 'major', label: '多数+継続' },
+  { s: 'major', t: 'emergency' },
+  { s: 'emergency', t: 'sp1' },
+  { s: 'sp1', t: 'chk3' },
+
+  // ④
+  { s: 'chk3', t: 'contact', label: '必要' },
+  { s: 'chk3', t: 'plaid_c', label: 'Plaid 経由' },
+  { s: 'chk3', t: 'recover', label: '不要' },
+  { s: 'contact', t: 'recover' },
+  { s: 'plaid_c', t: 'recover' },
+
+  // 復旧
+  { s: 'recover', t: 'sp2' },
+  { s: 'sp2', t: 'pm' },
+  { s: 'pm', t: 'sp3' },
+  { s: 'sp3', t: 'plaid_resolve' },
+  { s: 'plaid_resolve', t: 'cl4' },
+];
+
+// --- Dagre layout ---
+function layoutGraph(nodes, edges) {
+  const g = new dagre.graphlib.Graph();
+  g.setDefaultEdgeLabel(() => ({}));
+  g.setGraph({ rankdir: 'TB', nodesep: 80, ranksep: 90, marginx: 40, marginy: 40 });
+
+  nodes.forEach(n => g.setNode(n.id, { width: n.w || NODE_W, height: NODE_H }));
+  edges.forEach(e => g.setEdge(e.s, e.t));
+
+  dagre.layout(g);
+
+  const positioned = nodes.map(n => {
+    const pos = g.node(n.id);
+    const w = n.w || NODE_W;
+    return {
+      id: n.id,
+      position: { x: pos.x - w / 2, y: pos.y - NODE_H / 2 },
+      data: {
+        label: h('div', { className: `rf-node rf-node-${n.cls}` },
+          h('div', { className: 'label' }, n.label),
+          n.sub ? h('div', { className: 'sub' }, n.sub) : null
+        ),
+      },
+      type: 'default',
+      style: { background: 'transparent', border: 'none', padding: 0, width: 'auto' },
+    };
+  });
+
+  const layoutEdges = edges.map(e => ({
+    id: `${e.s}-${e.t}`,
+    source: e.s,
+    target: e.t,
+    label: e.label || undefined,
+    animated: false,
+    style: { stroke: '#94a3b8', strokeWidth: 1.5 },
+    labelStyle: { fill: '#64748b', fontSize: 10 },
+    labelBgStyle: { fill: '#ffffff' },
+    type: 'smoothstep',
+  }));
+
+  return { nodes: positioned, edges: layoutEdges };
+}
+
+const { nodes: initNodes, edges: initEdges } = layoutGraph(rawNodes, rawEdges);
+
+function App() {
+  const [nodes, , onNodesChange] = useNodesState(initNodes);
+  const [edges, , onEdgesChange] = useEdgesState(initEdges);
+
+  return h(ReactFlow, {
+    nodes, edges, onNodesChange, onEdgesChange,
+    fitView: true,
+    fitViewOptions: { padding: 0.1 },
+    defaultEdgeOptions: { type: 'smoothstep' },
+    style: { background: '#ffffff' },
+    minZoom: 0.15, maxZoom: 2,
+    proOptions: { hideAttribution: true },
+  },
+    h(Controls, { position: 'bottom-right' }),
+    h(Background, { color: '#f1f5f9', gap: 20, size: 1 }),
+    h(MiniMap, {
+      position: 'bottom-left',
+      nodeColor: () => '#64748b',
+      maskColor: 'rgba(255,255,255,0.7)',
+      style: { width: 140, height: 100 },
+    }),
+    h(Panel, { position: 'top-left' },
+      h('div', { className: 'panel-info' },
+        h('h1', null, '対応フロー'),
+        h('p', null, 'codatum-skills#8 — ドラッグ・ズーム操作可能'),
+      ),
+    ),
+  );
+}
+
+createRoot(document.getElementById('root')).render(h(App));
+</script>
+</body>
+</html>
