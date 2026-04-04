@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>coda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #08090a;
+      --bg-raised: #0f1011;
+      --bg-subtle: #141516;
+      --text-primary: #f7f8f8;
+      --text-secondary: #b4bcd0;
+      --text-tertiary: #8a8f98;
+      --text-quaternary: #62666d;
+      --line: rgba(255, 255, 255, 0.06);
+      --accent: #7170ff;
+      --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", sans-serif;
+      --font-mono: ui-monospace, "SF Mono", "Menlo", monospace;
+      --font-logo: "Space Mono", ui-monospace, monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      font-size: 0.9375rem;
+      font-weight: 400;
+      letter-spacing: -0.011em;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--text-secondary); text-decoration: none; transition: color 0.15s; }
+    a:hover { color: var(--text-primary); }
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      background: var(--bg-subtle);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(8, 9, 10, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--line);
+    }
+    .header-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-family: var(--font-logo);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.02em;
+    }
+    .nav { display: flex; gap: 24px; }
+    .nav a { font-size: 0.8125rem; color: var(--text-quaternary); }
+    .nav a:hover { color: var(--text-secondary); }
+    .nav a.active { color: var(--text-secondary); }
+
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 96px 24px;
+    }
+
+    /* --- Hero --- */
+    .hero { margin-bottom: 96px; }
+    .hero-logo {
+      font-family: var(--font-logo);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.02em;
+      margin-bottom: 16px;
+    }
+    .hero-lead {
+      font-size: 1.0625rem;
+      color: var(--text-tertiary);
+      max-width: 520px;
+      line-height: 1.7;
+    }
+    .hero-sub {
+      font-size: 0.8125rem;
+      color: var(--text-quaternary);
+      margin-top: 12px;
+    }
+
+    .section { margin-bottom: 96px; }
+    .section-label {
+      font-family: var(--font-logo);
+      font-size: 0.75rem;
+      color: var(--text-quaternary);
+      margin-bottom: 6px;
+    }
+    .section-title {
+      font-size: 1.0625rem;
+      font-weight: 510;
+      letter-spacing: -0.012em;
+      color: var(--text-primary);
+      margin-bottom: 24px;
+    }
+
+    /* --- Three pillars --- */
+    .pillars {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 640px) {
+      .pillars { grid-template-columns: 1fr; }
+    }
+    .pillar {
+      background: var(--bg);
+      padding: 28px 24px;
+    }
+    .pillar-num {
+      font-family: var(--font-logo);
+      font-size: 0.75rem;
+      color: var(--text-quaternary);
+      margin-bottom: 12px;
+    }
+    .pillar h3 {
+      font-size: 0.9375rem;
+      font-weight: 510;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .pillar p {
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      line-height: 1.6;
+    }
+
+    /* --- Cycle figure --- */
+    .cycle {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 40px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      overflow-x: auto;
+      margin-bottom: 32px;
+    }
+    .cycle-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      min-width: 80px;
+      flex-shrink: 0;
+    }
+    .cycle-circle {
+      width: 48px; height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      color: var(--text-tertiary);
+    }
+    .cycle-circle.highlight {
+      border-color: rgba(113, 112, 255, 0.3);
+      color: var(--accent);
+    }
+    .cycle-label {
+      font-size: 0.75rem;
+      font-weight: 510;
+      color: var(--text-primary);
+    }
+    .cycle-sub {
+      font-size: 0.6875rem;
+      color: var(--text-quaternary);
+      text-align: center;
+      max-width: 100px;
+    }
+    .cycle-arrow {
+      flex: 1;
+      min-width: 24px;
+      max-width: 48px;
+      height: 1px;
+      background: var(--line);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .cycle-arrow::after {
+      content: '→';
+      position: absolute;
+      right: -2px;
+      top: -9px;
+      font-size: 0.75rem;
+      color: var(--text-quaternary);
+    }
+    .cycle-arrow.back::after {
+      content: '←';
+      left: -2px;
+      right: auto;
+    }
+    .cycle-return {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px dashed var(--line);
+    }
+    .cycle-return-text {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      color: var(--text-quaternary);
+    }
+
+    /* --- Prose --- */
+    .prose p {
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      line-height: 1.7;
+      margin-bottom: 16px;
+      max-width: 560px;
+    }
+    .prose p strong {
+      color: var(--text-secondary);
+      font-weight: 510;
+    }
+
+    /* --- Invoke --- */
+    .invoke-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    @media (max-width: 640px) {
+      .invoke-grid { grid-template-columns: 1fr; }
+    }
+    .invoke-cell {
+      background: var(--bg);
+      padding: 24px;
+    }
+    .invoke-cell h3 {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      font-weight: 400;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .invoke-cell p {
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      line-height: 1.5;
+    }
+
+    /* --- Open by default --- */
+    .open-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    @media (max-width: 640px) {
+      .open-grid { grid-template-columns: 1fr; }
+    }
+    .open-cell {
+      background: var(--bg);
+      padding: 24px;
+    }
+    .open-cell h3 {
+      font-size: 0.8125rem;
+      font-weight: 510;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .open-cell p {
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      line-height: 1.5;
+    }
+    .open-cell.locked {
+      background: var(--bg-raised);
+    }
+
+    .footer {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+      border-top: 1px solid var(--line);
+    }
+    .footer a { font-size: 0.8125rem; color: var(--text-quaternary); }
+    .footer a:hover { color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <a href="./" class="logo">coda</a>
+      <nav class="nav">
+        <a href="./" class="active">About</a>
+        <a href="./skills.html">Skills</a>
+        <a href="./usage.html">Usage</a>
+        <a href="./security.html">Security</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+
+    <section class="hero">
+      <h1 class="hero-logo">coda</h1>
+      <p class="hero-lead">チームの access と knowledge を AI agent に共有する。agent はツールを操作し、学んだことを skill に書き戻す。</p>
+      <p class="hero-sub">Codatum, Inc. の社内 AI skills。ローカルの AI エージェントから直接使う。Slack / GitHub の bot としても動く。</p>
+    </section>
+
+    <!-- Three pillars -->
+    <section class="section">
+      <div class="pillars">
+        <div class="pillar">
+          <div class="pillar-num">01</div>
+          <h3>Access</h3>
+          <p>チームの credential を agent に共有する。agent はチームと同じツールにアクセスできる。個人の権限を委譲するのではなく、組織の access を共有する。</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-num">02</div>
+          <h3>Knowledge</h3>
+          <p>その access をどう使うかを skill に書く。マークダウンに構造化された手順。AI が読んで、そのまま実行する。</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-num">03</div>
+          <h3>Growth</h3>
+          <p>agent はタスク完了後に skill を PR で更新する。workspace はほぼ開放されており、使うほど知識が育つ。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cycle -->
+    <section class="section">
+      <div class="section-label">01</div>
+      <h2 class="section-title">Cycle</h2>
+      <div class="cycle">
+        <div class="cycle-node">
+          <div class="cycle-circle">usr</div>
+          <div class="cycle-label">依頼</div>
+          <div class="cycle-sub">Slack / GitHub /<br>Claude Code</div>
+        </div>
+        <div class="cycle-arrow"></div>
+        <div class="cycle-node">
+          <div class="cycle-circle highlight">coda</div>
+          <div class="cycle-label">skill 選択</div>
+          <div class="cycle-sub">SKILLS.md から<br>最適な skill を選ぶ</div>
+        </div>
+        <div class="cycle-arrow"></div>
+        <div class="cycle-node">
+          <div class="cycle-circle">exec</div>
+          <div class="cycle-label">実行</div>
+          <div class="cycle-sub">外部サービスと<br>連携して処理</div>
+        </div>
+        <div class="cycle-arrow"></div>
+        <div class="cycle-node">
+          <div class="cycle-circle">PR</div>
+          <div class="cycle-label">改善</div>
+          <div class="cycle-sub">skill 自体を<br>PR で更新</div>
+        </div>
+      </div>
+      <div class="prose">
+        <p>最後のステップが重要。agent はタスクを実行するだけでなく、手順に曖昧さや不足があれば skill 自体を修正する。この循環により、チームの知識ベースが使うほど洗練されていく。</p>
+      </div>
+    </section>
+
+    <!-- Invoke -->
+    <section class="section">
+      <div class="section-label">02</div>
+      <h2 class="section-title">Invoke</h2>
+      <div class="invoke-grid">
+        <div class="invoke-cell">
+          <h3>local</h3>
+          <p>Claude Code から skill を直接読み込んで実行。個人の認証で動く。</p>
+        </div>
+        <div class="invoke-cell">
+          <h3>slack</h3>
+          <p><code>@coda</code> でメンション。チームの共通認証で GitHub Actions 上で実行。</p>
+        </div>
+        <div class="invoke-cell">
+          <h3>github</h3>
+          <p>Issue / PR で <code>@coda</code>。Slack と同じ共通認証。</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <a href="./skills.html">Skills →</a>
+  </footer>
+
+</body>
+</html>
