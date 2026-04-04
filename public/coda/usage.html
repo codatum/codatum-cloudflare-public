@@ -300,12 +300,12 @@
       <div class="section-label">03</div>
       <h2 class="section-title">Local</h2>
       <div class="prose">
-        <p>Claude Code 等のエージェントに SKILL.md を直接読ませて指示する。</p>
-        <pre><code><span class="comment"># 例: structural-thinking を使って検討</span>
-skills/experts/structural-thinking/SKILL.md を読んで、この設計を検討して
+        <p>coda リポジトリ内で Claude Code を起動し、skill 名で指示する。</p>
+        <pre><code><span class="comment"># skill 名で指示するだけで使える</span>
+structural-thinking の skill 使って、この設計を検討して
 
-<span class="comment"># 例: SKILLS.md から自動選択</span>
-skills/SKILLS.md を読んで、価格ドリフトを確認して</code></pre>
+<span class="comment"># 依頼内容に合う skill を自動で選ばせる</span>
+価格ドリフトを確認して</code></pre>
         <p>個人の Google Account で認証するため、KMS 復号権限があれば admin 相当の操作が可能。</p>
       </div>
     </section>
