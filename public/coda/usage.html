@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to use — coda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #08090a;
+      --bg-raised: #0f1011;
+      --bg-subtle: #141516;
+      --text-primary: #f7f8f8;
+      --text-secondary: #b4bcd0;
+      --text-tertiary: #8a8f98;
+      --text-quaternary: #62666d;
+      --line: rgba(255, 255, 255, 0.06);
+      --accent: #7170ff;
+      --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", sans-serif;
+      --font-mono: ui-monospace, "SF Mono", "Menlo", monospace;
+      --font-logo: "Space Mono", ui-monospace, monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      font-size: 0.9375rem;
+      font-weight: 400;
+      letter-spacing: -0.011em;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--text-secondary); text-decoration: none; transition: color 0.15s; }
+    a:hover { color: var(--text-primary); }
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      background: var(--bg-subtle);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(8, 9, 10, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--line);
+    }
+    .header-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-family: var(--font-logo);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.02em;
+    }
+    .nav { display: flex; gap: 24px; }
+    .nav a { font-size: 0.8125rem; color: var(--text-quaternary); }
+    .nav a:hover { color: var(--text-secondary); }
+    .nav a.active { color: var(--text-secondary); }
+
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 64px 24px;
+    }
+
+    .hero { margin-bottom: 64px; }
+    .hero h1 {
+      font-size: 1.5rem;
+      font-weight: 510;
+      letter-spacing: -0.022em;
+      line-height: 1.33;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .hero p { font-size: 0.875rem; color: var(--text-tertiary); }
+
+    .section { margin-bottom: 64px; }
+    .section-label {
+      font-family: var(--font-logo);
+      font-size: 0.75rem;
+      color: var(--text-quaternary);
+      margin-bottom: 6px;
+    }
+    .section-title {
+      font-size: 1.0625rem;
+      font-weight: 510;
+      letter-spacing: -0.012em;
+      color: var(--text-primary);
+      margin-bottom: 24px;
+    }
+
+    .prose { max-width: 640px; }
+    .prose h3 {
+      font-size: 0.9375rem;
+      font-weight: 510;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      margin-top: 32px;
+    }
+    .prose h3:first-child { margin-top: 0; }
+    .prose p {
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .prose ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 16px;
+    }
+    .prose ul li {
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      line-height: 1.6;
+      padding: 4px 0 4px 16px;
+      position: relative;
+    }
+    .prose ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 4px;
+      height: 1px;
+      background: var(--text-quaternary);
+    }
+
+    pre {
+      background: var(--bg-raised);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .comment { color: var(--text-quaternary); }
+
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+    }
+    .step {
+      counter-increment: step;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 16px;
+    }
+    .step:last-child { border-bottom: none; }
+    .step::before {
+      content: counter(step);
+      font-family: var(--font-logo);
+      font-size: 0.8125rem;
+      color: var(--text-quaternary);
+      padding-top: 2px;
+    }
+    .step h3 {
+      font-size: 0.9375rem;
+      font-weight: 510;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .step p {
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      line-height: 1.6;
+    }
+
+    .layers {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .layer {
+      background: var(--bg);
+      padding: 16px 24px;
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 16px;
+      align-items: baseline;
+    }
+    @media (max-width: 640px) {
+      .layer { grid-template-columns: 1fr; gap: 4px; }
+    }
+    .layer-name {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--text-primary);
+    }
+    .layer-desc {
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      line-height: 1.5;
+    }
+
+    .footer {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+    }
+    .footer a { font-size: 0.8125rem; color: var(--text-quaternary); }
+    .footer a:hover { color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <a href="./" class="logo">coda</a>
+      <nav class="nav">
+        <a href="./">About</a>
+        <a href="./skills.html">Skills</a>
+        <a href="./usage.html" class="active">Usage</a>
+        <a href="./security.html">Security</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+
+    <section class="hero">
+      <h1>How to use</h1>
+      <p>coda の使い方。ローカル、Slack、GitHub の 3 つの経路がある。</p>
+    </section>
+
+    <!-- Authentication -->
+    <section class="section">
+      <div class="section-label">01</div>
+      <h2 class="section-title">Authentication</h2>
+      <div class="prose">
+        <p>経路によって認証が異なる。</p>
+      </div>
+      <div class="layers" style="margin-top: 16px;">
+        <div class="layer">
+          <span class="layer-name">Local</span>
+          <span class="layer-desc">個人の Google Account で認証。SOPS + GCP KMS の復号権限が必要。アクセスできる credential は個人の権限に依存する。</span>
+        </div>
+        <div class="layer">
+          <span class="layer-name">Slack / GitHub</span>
+          <span class="layer-desc">共通のサービスアカウント（GitHub App + GCP SA）で認証。GitHub Actions 上で動作し、member 相当の固定権限。両方とも同じ credential セットを使用する。</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Local -->
+    <section class="section">
+      <div class="section-label">02</div>
+      <h2 class="section-title">Local</h2>
+      <div class="prose">
+        <h3>セットアップ</h3>
+        <pre><code><span class="comment"># 1. clone</span>
+git clone git@github.com:codatum/coda.git
+
+<span class="comment"># 2. 依存関係・credential の復号</span>
+make setup
+
+<span class="comment"># 3. 対象リポジトリから symlink</span>
+mkdir -p .claude
+ln -s /path/to/coda .claude/skills</code></pre>
+        <p><code>make setup</code> には GCP KMS の復号権限（<code>roles/cloudkms.cryptKeyDecrypter</code>）が必要。</p>
+
+        <h3>skill を直接指定して実行</h3>
+        <pre><code><span class="comment"># 対話モード</span>
+make claude-skill SKILL=workflows/llm-pricing-workflow
+
+<span class="comment"># 非対話モード</span>
+make claude-skill SKILL=workflows/llm-pricing-workflow MODE=once</code></pre>
+
+        <h3>あいまいな依頼をルーティング</h3>
+        <pre><code>make claude-route TASK="価格ドリフトとmissingを確認して"</code></pre>
+
+        <h3>Claude Code から直接読み込む</h3>
+        <p>symlink を設定済みなら、Claude Code が <code>.claude/skills/</code> 配下の SKILL.md を自動で認識する。<code>SKILLS.md</code> を読ませて適切な skill を選ばせることもできる。</p>
+      </div>
+    </section>
+
+    <!-- Slack -->
+    <section class="section">
+      <div class="section-label">03</div>
+      <h2 class="section-title">Slack</h2>
+      <div class="prose">
+        <h3>基本</h3>
+        <p><code>@coda</code> をメンションする。簡単な質問には Cloudflare Worker で数秒回答し、調査が必要な場合は GitHub Actions で深く掘り下げる。</p>
+
+        <h3>スレッド対応</h3>
+        <p>スレッド内でメンションすると、スレッド全体の会話コンテキストを読み取って回答する。</p>
+
+        <h3>対応チャンネル</h3>
+        <p>ツール実行（外部 API 呼び出し等）は以下のチャンネルでのみ動作する。それ以外では即時回答のみ。</p>
+      </div>
+      <div class="layers" style="margin-top: 16px;">
+        <div class="layer"><span class="layer-name">#dev</span><span class="layer-desc">開発チャンネル</span></div>
+        <div class="layer"><span class="layer-name">#biz</span><span class="layer-desc">ビジネスチャンネル</span></div>
+        <div class="layer"><span class="layer-name">#random</span><span class="layer-desc">雑談</span></div>
+        <div class="layer"><span class="layer-name">#feedbacks</span><span class="layer-desc">フィードバック</span></div>
+        <div class="layer"><span class="layer-name">#biz_random</span><span class="layer-desc">ビジネス雑談</span></div>
+        <div class="layer"><span class="layer-name">#codatum_alert</span><span class="layer-desc">アラート</span></div>
+      </div>
+    </section>
+
+    <!-- GitHub -->
+    <section class="section">
+      <div class="section-label">04</div>
+      <h2 class="section-title">GitHub</h2>
+      <div class="prose">
+        <h3>トリガー</h3>
+        <p>Issue コメント、PR コメント、PR レビューのいずれかで <code>@coda</code> を含むコメントを投稿する。</p>
+
+        <h3>できること</h3>
+        <ul>
+          <li>コードの調査・分析</li>
+          <li>修正 PR の作成</li>
+          <li>Issue への調査結果コメント</li>
+          <li>クロスリポジトリの Issue 参照</li>
+        </ul>
+
+        <h3>注意</h3>
+        <p>main への直接 push は禁止。必ず PR を作成し、マージは人間が行う。</p>
+      </div>
+    </section>
+
+
+  </main>
+
+  <footer class="footer">
+    <a href="./skills.html">← Skills</a>
+    <a href="./security.html">Security →</a>
+  </footer>
+
+</body>
+</html>

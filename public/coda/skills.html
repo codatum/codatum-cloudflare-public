@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skills — coda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #08090a;
+      --bg-raised: #0f1011;
+      --bg-subtle: #141516;
+      --text-primary: #f7f8f8;
+      --text-secondary: #b4bcd0;
+      --text-tertiary: #8a8f98;
+      --text-quaternary: #62666d;
+      --line: rgba(255, 255, 255, 0.06);
+      --accent: #7170ff;
+      --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", sans-serif;
+      --font-mono: ui-monospace, "SF Mono", "Menlo", monospace;
+      --font-logo: "Space Mono", ui-monospace, monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      font-size: 0.9375rem;
+      font-weight: 400;
+      letter-spacing: -0.011em;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--text-secondary); text-decoration: none; transition: color 0.15s; }
+    a:hover { color: var(--text-primary); }
+
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(8, 9, 10, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--line);
+    }
+    .header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-family: var(--font-logo);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.02em;
+    }
+    .nav { display: flex; gap: 24px; }
+    .nav a { font-size: 0.8125rem; color: var(--text-quaternary); }
+    .nav a:hover { color: var(--text-secondary); }
+    .nav a.active { color: var(--text-secondary); }
+
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 64px 24px;
+    }
+
+    .hero { margin-bottom: 48px; }
+    .hero h1 {
+      font-size: 1.5rem;
+      font-weight: 510;
+      letter-spacing: -0.022em;
+      line-height: 1.33;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .hero p { font-size: 0.875rem; color: var(--text-tertiary); }
+
+    /* --- Types table --- */
+    .types {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 48px;
+    }
+    .types-row {
+      padding: 14px 24px;
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 16px;
+      align-items: baseline;
+    }
+    .types-row + .types-row { border-top: 1px solid var(--line); }
+    .types-row.head {
+      background: var(--bg-raised);
+    }
+    .types-label {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--text-primary);
+    }
+    .types-desc {
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+    }
+    .types-head-label {
+      font-size: 0.6875rem;
+      font-weight: 510;
+      color: var(--text-quaternary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* --- Filters --- */
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .filter-label {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      color: var(--text-quaternary);
+      width: 32px;
+      flex-shrink: 0;
+    }
+    .filters {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      font-family: var(--font);
+      font-size: 0.75rem;
+      font-weight: 510;
+      color: var(--text-quaternary);
+      background: none;
+      border: 1px solid var(--line);
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover {
+      color: var(--text-secondary);
+      border-color: rgba(255,255,255,0.12);
+    }
+    .filter-btn.active {
+      color: var(--text-primary);
+      border-color: rgba(255,255,255,0.2);
+      background: var(--bg-subtle);
+    }
+
+    /* --- Table --- */
+    .skill-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 48px;
+    }
+    .skill-table th {
+      font-size: 0.6875rem;
+      font-weight: 510;
+      color: var(--text-quaternary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .skill-table th:hover {
+      color: var(--text-secondary);
+    }
+    .skill-table th .sort-arrow {
+      font-size: 0.625rem;
+      margin-left: 4px;
+      opacity: 0.4;
+    }
+    .skill-table th.sorted .sort-arrow {
+      opacity: 1;
+    }
+    .skill-table td {
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: baseline;
+    }
+    .skill-table td:first-child {
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+    .skill-table .tag {
+      font-size: 0.6875rem;
+      font-weight: 510;
+      color: var(--text-quaternary);
+      border: 1px solid var(--line);
+      padding: 1px 6px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+    .skill-table .uses {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      color: var(--text-quaternary);
+    }
+    .skill-table tr.hidden { display: none; }
+
+    .footer {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+      border-top: 1px solid var(--line);
+    }
+    .footer a { font-size: 0.8125rem; color: var(--text-quaternary); }
+    .footer a:hover { color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <a href="./" class="logo">coda</a>
+      <nav class="nav">
+        <a href="./">About</a>
+        <a href="./skills.html" class="active">Skills</a>
+        <a href="./usage.html">Usage</a>
+        <a href="./security.html">Security</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+
+    <section class="hero">
+      <h1>Skills</h1>
+      <p>coda が使える skill の一覧。各 skill は独立しており、自由に組み合わせて使える。</p>
+    </section>
+
+    <!-- Types -->
+    <div class="types">
+      <div class="types-row head">
+        <span class="types-head-label">Type</span>
+        <span class="types-head-label">Description</span>
+      </div>
+      <div class="types-row">
+        <span class="types-label">service</span>
+        <span class="types-desc">外部サービスの API / MCP / CLI を操作するための知識レイヤー</span>
+      </div>
+      <div class="types-row">
+        <span class="types-label">expert</span>
+        <span class="types-desc">判断・提案・成果物の生成を行うスペシャリスト</span>
+      </div>
+      <div class="types-row">
+        <span class="types-label">workflow</span>
+        <span class="types-desc">定型手順を順に実行し、決まった成果物を出力する</span>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-group">
+      <span class="filter-label">type</span>
+      <div class="filters" id="type-filters">
+        <button class="filter-btn active" data-filter="all" data-dim="type">all</button>
+        <button class="filter-btn" data-filter="service" data-dim="type">service</button>
+        <button class="filter-btn" data-filter="expert" data-dim="type">expert</button>
+        <button class="filter-btn" data-filter="workflow" data-dim="type">workflow</button>
+      </div>
+    </div>
+    <div class="filter-group" style="margin-bottom: 16px;">
+      <span class="filter-label">role</span>
+      <div class="filters" id="role-filters">
+        <button class="filter-btn active" data-filter="all" data-dim="role">all</button>
+        <button class="filter-btn" data-filter="everyone" data-dim="role">everyone</button>
+        <button class="filter-btn" data-filter="dev" data-dim="role">dev</button>
+        <button class="filter-btn" data-filter="marketing" data-dim="role">marketing</button>
+        <button class="filter-btn" data-filter="design" data-dim="role">design</button>
+        <button class="filter-btn" data-filter="support" data-dim="role">support</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <table class="skill-table" id="skill-table">
+      <thead>
+        <tr>
+          <th data-sort="name">name <span class="sort-arrow">↕</span></th>
+          <th>description</th>
+          <th data-sort="type" class="sorted">type <span class="sort-arrow">↓</span></th>
+          <th data-sort="role">role <span class="sort-arrow">↕</span></th>
+          <th>uses</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- service / everyone -->
+        <tr data-type="service" data-role="everyone"><td>slack</td><td>チャンネル履歴・検索・投稿・Block Kit 通知</td><td><span class="tag">service</span></td><td><span class="tag">everyone</span></td><td></td></tr>
+        <tr data-type="service" data-role="everyone"><td>notion</td><td>データベースクエリ・ページ操作・ワークスペース検索</td><td><span class="tag">service</span></td><td><span class="tag">everyone</span></td><td></td></tr>
+        <tr data-type="service" data-role="everyone"><td>google-drive</td><td>ファイル検索・Docs/Sheets/Slides エクスポート</td><td><span class="tag">service</span></td><td><span class="tag">everyone</span></td><td></td></tr>
+        <!-- service / dev -->
+        <tr data-type="service" data-role="dev"><td>github</td><td>Issue・PR の操作、作成・コメント・マージ</td><td><span class="tag">service</span></td><td><span class="tag">dev</span></td><td></td></tr>
+        <tr data-type="service" data-role="dev"><td>sentry</td><td>エラーイベントの取得・検索・詳細確認</td><td><span class="tag">service</span></td><td><span class="tag">dev</span></td><td></td></tr>
+        <tr data-type="service" data-role="dev"><td>datadog</td><td>メトリクス・ログ・モニターの取得・検索</td><td><span class="tag">service</span></td><td><span class="tag">dev</span></td><td></td></tr>
+        <tr data-type="service" data-role="dev"><td>cloudflare</td><td>Workers デプロイ・D1/KV/R2 操作・設定管理</td><td><span class="tag">service</span></td><td><span class="tag">dev</span></td><td></td></tr>
+        <tr data-type="service" data-role="dev"><td>langfuse</td><td>モデル定義の取得・突合チェック</td><td><span class="tag">service</span></td><td><span class="tag">dev</span></td><td></td></tr>
+        <!-- service / marketing -->
+        <tr data-type="service" data-role="marketing"><td>semrush</td><td>キーワード調査・ドメイン分析・競合分析</td><td><span class="tag">service</span></td><td><span class="tag">marketing</span></td><td></td></tr>
+        <tr data-type="service" data-role="marketing"><td>contentful</td><td>CMS コンテンツ取得・検索・プレビュー</td><td><span class="tag">service</span></td><td><span class="tag">marketing</span></td><td></td></tr>
+        <tr data-type="service" data-role="marketing"><td>google-analytics</td><td>GA4 トラフィック分析・チャネル別レポート</td><td><span class="tag">service</span></td><td><span class="tag">marketing</span></td><td></td></tr>
+        <tr data-type="service" data-role="marketing"><td>google-search-console</td><td>URL インデックス状況・サイトマップ確認</td><td><span class="tag">service</span></td><td><span class="tag">marketing</span></td><td></td></tr>
+        <tr data-type="service" data-role="marketing"><td>lighthouse</td><td>監査実行・スコア/ボトルネック特定</td><td><span class="tag">service</span></td><td><span class="tag">marketing</span></td><td></td></tr>
+        <!-- service / support -->
+        <tr data-type="service" data-role="support"><td>upflow</td><td>案件検索・商談記録・顧客の声</td><td><span class="tag">service</span></td><td><span class="tag">support</span></td><td></td></tr>
+        <!-- expert / everyone -->
+        <tr data-type="expert" data-role="everyone"><td>skill-creator</td><td>依頼をヒアリングし SKILL.md に落とし込む</td><td><span class="tag">expert</span></td><td><span class="tag">everyone</span></td><td></td></tr>
+        <tr data-type="expert" data-role="everyone"><td>external-skills</td><td>skills.sh から外部 skill を検索・取得して活用</td><td><span class="tag">expert</span></td><td><span class="tag">everyone</span></td><td></td></tr>
+        <tr data-type="expert" data-role="everyone"><td>resource-searcher</td><td>社内リソースの横断検索・タグ/ソース絞り込み</td><td><span class="tag">expert</span></td><td><span class="tag">everyone</span></td><td></td></tr>
+        <!-- expert / design -->
+        <tr data-type="expert" data-role="design"><td>figure-designer</td><td>図版の意味構造を読み解き HTML/CSS で再現</td><td><span class="tag">expert</span></td><td><span class="tag">design</span></td><td></td></tr>
+        <tr data-type="expert" data-role="design"><td>minimal-theme</td><td>Linear 風ミニマルデザインで静的 HTML を生成</td><td><span class="tag">expert</span></td><td><span class="tag">design</span></td><td></td></tr>
+        <!-- expert / dev -->
+        <tr data-type="expert" data-role="dev"><td>incident-analyst</td><td>エラー調査・原因仮説・対応策提案</td><td><span class="tag">expert</span></td><td><span class="tag">dev</span></td><td><span class="uses">sentry datadog</span></td></tr>
+        <!-- expert / marketing -->
+        <tr data-type="expert" data-role="marketing"><td>seo-advisor</td><td>キーワード調査・競合分析・SEO 施策提案</td><td><span class="tag">expert</span></td><td><span class="tag">marketing</span></td><td><span class="uses">semrush</span></td></tr>
+        <tr data-type="expert" data-role="marketing"><td>page-optimizer</td><td>画像最適化・フォントサブセット・未使用 JS/CSS 改善</td><td><span class="tag">expert</span></td><td><span class="tag">marketing</span></td><td><span class="uses">lighthouse</span></td></tr>
+        <tr data-type="expert" data-role="marketing"><td>sitemap-checker</td><td>URL インデックス状況の分析・検証</td><td><span class="tag">expert</span></td><td><span class="tag">marketing</span></td><td><span class="uses">google-search-console</span></td></tr>
+        <!-- workflow / dev -->
+        <tr data-type="workflow" data-role="dev"><td>llm-pricing-workflow</td><td>モデル定義と Langfuse の突合・価格チェック・HTML レポート</td><td><span class="tag">workflow</span></td><td><span class="tag">dev</span></td><td><span class="uses">langfuse</span></td></tr>
+      </tbody>
+    </table>
+
+  </main>
+
+  <footer class="footer">
+    <a href="./">← About</a>
+  </footer>
+
+  <script>
+    const allRows = document.querySelectorAll('#skill-table tbody tr');
+    const table = document.getElementById('skill-table');
+    const thead = table.querySelector('thead');
+    const tbody = table.querySelector('tbody');
+    const ths = thead.querySelectorAll('th[data-sort]');
+
+    let activeType = 'all';
+    let activeRole = 'all';
+
+    // --- Count & label ---
+    function updateCounts() {
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        const dim = btn.dataset.dim;
+        const val = btn.dataset.filter;
+        let count;
+        if (val === 'all') {
+          if (dim === 'type') count = Array.from(allRows).filter(r => activeRole === 'all' || r.dataset.role === activeRole).length;
+          else count = Array.from(allRows).filter(r => activeType === 'all' || r.dataset.type === activeType).length;
+        } else {
+          if (dim === 'type') count = Array.from(allRows).filter(r => r.dataset.type === val && (activeRole === 'all' || r.dataset.role === activeRole)).length;
+          else count = Array.from(allRows).filter(r => r.dataset.role === val && (activeType === 'all' || r.dataset.type === activeType)).length;
+        }
+        btn.textContent = val === 'all' ? `all (${count})` : `${val} (${count})`;
+      });
+    }
+
+    // --- Filter ---
+    function applyFilter() {
+      allRows.forEach(row => {
+        const matchType = activeType === 'all' || row.dataset.type === activeType;
+        const matchRole = activeRole === 'all' || row.dataset.role === activeRole;
+        row.classList.toggle('hidden', !(matchType && matchRole));
+      });
+      updateCounts();
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const dim = btn.dataset.dim;
+        const val = btn.dataset.filter;
+        if (dim === 'type') activeType = val;
+        else activeRole = val;
+
+        document.querySelectorAll(`.filter-btn[data-dim="${dim}"]`).forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyFilter();
+      });
+    });
+
+    // --- Sorting ---
+    const typeOrder = { service: 0, expert: 1, workflow: 2 };
+    const roleOrder = { everyone: 0, design: 1, dev: 2, marketing: 3, support: 4 };
+    let currentSort = 'type';
+    let currentDir = 'asc';
+
+    function sortTable(key, dir) {
+      const rowsArr = Array.from(tbody.querySelectorAll('tr'));
+      rowsArr.sort((a, b) => {
+        if (key === 'name') {
+          const va = a.cells[0].textContent, vb = b.cells[0].textContent;
+          return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+        }
+        let va, vb;
+        if (key === 'type') {
+          va = typeOrder[a.dataset.type] * 10 + roleOrder[a.dataset.role];
+          vb = typeOrder[b.dataset.type] * 10 + roleOrder[b.dataset.role];
+        } else {
+          va = roleOrder[a.dataset.role] * 10 + typeOrder[a.dataset.type];
+          vb = roleOrder[b.dataset.role] * 10 + typeOrder[b.dataset.type];
+        }
+        return dir === 'asc' ? va - vb : vb - va;
+      });
+      rowsArr.forEach(r => tbody.appendChild(r));
+      ths.forEach(th => { th.classList.remove('sorted'); th.querySelector('.sort-arrow').textContent = '↕'; });
+      const activeTh = thead.querySelector(`th[data-sort="${key}"]`);
+      activeTh.classList.add('sorted');
+      activeTh.querySelector('.sort-arrow').textContent = dir === 'asc' ? '↓' : '↑';
+    }
+
+    ths.forEach(th => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.sort;
+        if (currentSort === key) currentDir = currentDir === 'asc' ? 'desc' : 'asc';
+        else { currentSort = key; currentDir = 'asc'; }
+        sortTable(key, currentDir);
+      });
+    });
+
+    // init counts
+    updateCounts();
+  </script>
+
+</body>
+</html>
