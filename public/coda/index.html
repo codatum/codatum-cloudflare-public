@@ -405,16 +405,16 @@
       <h2 class="section-title">Invoke</h2>
       <div class="invoke-grid">
         <div class="invoke-cell">
-          <h3>local</h3>
-          <p>Claude Code から skill を直接読み込んで実行。個人の認証で動く。</p>
-        </div>
-        <div class="invoke-cell">
           <h3>slack</h3>
-          <p><code>@coda</code> でメンション。チームの共通認証で GitHub Actions 上で実行。</p>
+          <p><code>@coda</code> でメンション。skill が自動選択されて実行される。</p>
         </div>
         <div class="invoke-cell">
           <h3>github</h3>
-          <p>Issue / PR で <code>@coda</code>。Slack と同じ共通認証。</p>
+          <p>Issue / PR で <code>@coda</code>。Slack と同じ共通認証で動く。</p>
+        </div>
+        <div class="invoke-cell">
+          <h3>local</h3>
+          <p>SKILL.md を直接読ませて指示する。個人の認証で動く。</p>
         </div>
       </div>
     </section>

@@ -255,69 +255,15 @@
 
     <section class="hero">
       <h1>How to use</h1>
-      <p>coda の使い方。ローカル、Slack、GitHub の 3 つの経路がある。</p>
-    </section>
-
-    <!-- Authentication -->
-    <section class="section">
-      <div class="section-label">01</div>
-      <h2 class="section-title">Authentication</h2>
-      <div class="prose">
-        <p>経路によって認証が異なる。</p>
-      </div>
-      <div class="layers" style="margin-top: 16px;">
-        <div class="layer">
-          <span class="layer-name">Local</span>
-          <span class="layer-desc">個人の Google Account で認証。SOPS + GCP KMS の復号権限が必要。アクセスできる credential は個人の権限に依存する。</span>
-        </div>
-        <div class="layer">
-          <span class="layer-name">Slack / GitHub</span>
-          <span class="layer-desc">共通のサービスアカウント（GitHub App + GCP SA）で認証。GitHub Actions 上で動作し、member 相当の固定権限。両方とも同じ credential セットを使用する。</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Local -->
-    <section class="section">
-      <div class="section-label">02</div>
-      <h2 class="section-title">Local</h2>
-      <div class="prose">
-        <h3>セットアップ</h3>
-        <pre><code><span class="comment"># 1. clone</span>
-git clone git@github.com:codatum/coda.git
-
-<span class="comment"># 2. 依存関係・credential の復号</span>
-make setup
-
-<span class="comment"># 3. 対象リポジトリから symlink</span>
-mkdir -p .claude
-ln -s /path/to/coda .claude/skills</code></pre>
-        <p><code>make setup</code> には GCP KMS の復号権限（<code>roles/cloudkms.cryptKeyDecrypter</code>）が必要。</p>
-
-        <h3>skill を直接指定して実行</h3>
-        <pre><code><span class="comment"># 対話モード</span>
-make claude-skill SKILL=workflows/llm-pricing-workflow
-
-<span class="comment"># 非対話モード</span>
-make claude-skill SKILL=workflows/llm-pricing-workflow MODE=once</code></pre>
-
-        <h3>あいまいな依頼をルーティング</h3>
-        <pre><code>make claude-route TASK="価格ドリフトとmissingを確認して"</code></pre>
-
-        <h3>Claude Code から直接読み込む</h3>
-        <p>symlink を設定済みなら、Claude Code が <code>.claude/skills/</code> 配下の SKILL.md を自動で認識する。<code>SKILLS.md</code> を読ませて適切な skill を選ばせることもできる。</p>
-      </div>
+      <p>bot（Slack / GitHub）とローカルの 2 つの経路がある。bot は skill が自動選択される。ローカルでは SKILL.md を直接指定する。</p>
     </section>
 
     <!-- Slack -->
     <section class="section">
-      <div class="section-label">03</div>
+      <div class="section-label">01</div>
       <h2 class="section-title">Slack</h2>
       <div class="prose">
-        <h3>基本</h3>
-        <p><code>@coda</code> をメンションする。簡単な質問には Cloudflare Worker で数秒回答し、調査が必要な場合は GitHub Actions で深く掘り下げる。</p>
-
-        <h3>スレッド対応</h3>
+        <p><code>@coda</code> をメンションするだけ。適切な skill が自動選択されて実行される。簡単な質問は Cloudflare Worker で数秒回答、調査が必要なら GitHub Actions で深く掘り下げる。</p>
         <p>スレッド内でメンションすると、スレッド全体の会話コンテキストを読み取って回答する。</p>
 
         <h3>対応チャンネル</h3>
@@ -335,22 +281,48 @@ make claude-skill SKILL=workflows/llm-pricing-workflow MODE=once</code></pre>
 
     <!-- GitHub -->
     <section class="section">
-      <div class="section-label">04</div>
+      <div class="section-label">02</div>
       <h2 class="section-title">GitHub</h2>
       <div class="prose">
-        <h3>トリガー</h3>
-        <p>Issue コメント、PR コメント、PR レビューのいずれかで <code>@coda</code> を含むコメントを投稿する。</p>
-
-        <h3>できること</h3>
+        <p>Issue コメント、PR コメント、PR レビューのいずれかで <code>@coda</code> を含むコメントを投稿する。Slack と同じく skill は自動選択される。</p>
         <ul>
           <li>コードの調査・分析</li>
           <li>修正 PR の作成</li>
           <li>Issue への調査結果コメント</li>
           <li>クロスリポジトリの Issue 参照</li>
         </ul>
+        <p>main への直接 push は禁止。変更は必ず PR を経由し、マージは人間が行う。</p>
+      </div>
+    </section>
 
-        <h3>注意</h3>
-        <p>main への直接 push は禁止。必ず PR を作成し、マージは人間が行う。</p>
+    <!-- Local -->
+    <section class="section">
+      <div class="section-label">03</div>
+      <h2 class="section-title">Local</h2>
+      <div class="prose">
+        <p>Claude Code 等のエージェントに SKILL.md を直接読ませて指示する。</p>
+        <pre><code><span class="comment"># 例: structural-thinking を使って検討</span>
+skills/experts/structural-thinking/SKILL.md を読んで、この設計を検討して
+
+<span class="comment"># 例: SKILLS.md から自動選択</span>
+skills/SKILLS.md を読んで、価格ドリフトを確認して</code></pre>
+        <p>個人の Google Account で認証するため、KMS 復号権限があれば admin 相当の操作が可能。</p>
+      </div>
+    </section>
+
+    <!-- Authentication -->
+    <section class="section">
+      <div class="section-label">04</div>
+      <h2 class="section-title">Authentication</h2>
+      <div class="layers">
+        <div class="layer">
+          <span class="layer-name">bot</span>
+          <span class="layer-desc">共通のサービスアカウント（GitHub App + GCP SA）で認証。member 相当の固定権限。Slack と GitHub の両方がこの経路</span>
+        </div>
+        <div class="layer">
+          <span class="layer-name">local</span>
+          <span class="layer-desc">個人の Google Account で認証。アクセスできる credential は個人の権限に依存する</span>
+        </div>
       </div>
     </section>
 
