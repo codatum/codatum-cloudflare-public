@@ -81,6 +81,36 @@
       margin-bottom: 8px;
     }
     .hero p { font-size: 0.875rem; color: var(--text-tertiary); max-width: 520px; line-height: 1.7; }
+    .hero-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      counter-reset: hl-counter;
+    }
+    .hero-list li {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      counter-increment: hl-counter;
+    }
+    .hero-list li::before {
+      content: counter(hl-counter) ". ";
+      color: var(--text-quaternary);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      margin-right: 4px;
+    }
+    .hero-list .hl-title {
+      color: var(--text-secondary);
+      font-weight: 510;
+    }
+    .hero-list .hl-desc {
+      color: var(--text-tertiary);
+    }
+    .hero-list .hl-sep {
+      color: var(--text-quaternary);
+      margin: 0 2px;
+    }
 
     .section { margin-bottom: 64px; }
     .section-label {
@@ -181,19 +211,19 @@
     .m-external {
       position: absolute;
       inset: 0;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 8px;
     }
     .m-member {
       position: absolute;
       inset: 48px;
-      border: 1px solid rgba(113, 112, 255, 0.15);
+      border: 1px solid rgba(113, 112, 255, 0.35);
       border-radius: 6px;
     }
     .m-admin {
       position: absolute;
       top: 104px; bottom: 104px; left: 300px; right: 104px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 4px;
       background: var(--bg-raised);
     }
@@ -202,11 +232,11 @@
     .m-level {
       position: absolute;
       font-family: var(--font-mono);
-      font-size: 0.625rem;
+      font-size: 0.75rem;
       letter-spacing: 0.04em;
     }
     .m-level-external { top: 5px;  left: 10px;  color: var(--text-quaternary); }
-    .m-level-member   { top: 53px; left: 58px;  color: rgba(113, 112, 255, 0.45); }
+    .m-level-member   { top: 53px; left: 58px;  color: rgba(113, 112, 255, 0.55); }
     .m-level-admin    { top: 109px; left: 310px;  color: var(--text-quaternary); }
 
     /* --- walls: dashed lines between boxes --- */
@@ -214,28 +244,28 @@
     .m-wall-outer {
       position: absolute;
       inset: 36px;
-      border: 1px dashed rgba(113, 112, 255, 0.2);
+      border: 1px dashed rgba(113, 112, 255, 0.4);
       border-radius: 7px;
     }
     /* inner wall — Process/Change/Auth (3 lines, 4px gap): 36px from member on top/bot/right */
     .m-wall-inner {
       position: absolute;
       top: 84px; bottom: 84px; left: 280px; right: 84px;
-      border: 1px dashed rgba(255, 255, 255, 0.08);
+      border: 1px dashed rgba(255, 255, 255, 0.18);
       border-radius: 7px;
     }
     .m-wall-inner::before {
       content: '';
       position: absolute;
       inset: 4px;
-      border: 1px dashed rgba(255, 255, 255, 0.08);
+      border: 1px dashed rgba(255, 255, 255, 0.18);
       border-radius: 6px;
     }
     .m-wall-inner::after {
       content: '';
       position: absolute;
       inset: 8px;
-      border: 1px dashed rgba(255, 255, 255, 0.08);
+      border: 1px dashed rgba(255, 255, 255, 0.18);
       border-radius: 5px;
     }
 
@@ -243,7 +273,7 @@
     .m-wall-label {
       position: absolute;
       font-family: var(--font-mono);
-      font-size: 0.5625rem;
+      font-size: 0.6875rem;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -252,7 +282,7 @@
     .m-wall-label::before {
       content: '';
       display: inline-block;
-      width: 8px; height: 10px;
+      width: 9px; height: 11px;
       clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
       background: currentColor;
       opacity: 0.5;
@@ -261,12 +291,12 @@
       top: -0.5px;
     }
     .m-wall-outer .m-wall-label {
-      bottom: -18px; right: 4px;
-      color: rgba(113, 112, 255, 0.4);
+      bottom: -20px; right: 4px;
+      color: rgba(113, 112, 255, 0.55);
     }
     .m-wall-inner .m-wall-label {
-      bottom: -18px; right: 0px;
-      color: var(--text-quaternary);
+      bottom: -20px; right: 0px;
+      color: var(--text-tertiary);
     }
     .m-wall-sep {
       opacity: 0.4;
@@ -281,12 +311,12 @@
       gap: 6px;
     }
     .m-marker-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
+      width: 8px; height: 8px;
+      border-radius: 2px;
     }
     .m-marker-text {
       font-family: var(--font-mono);
-      font-size: 0.625rem;
+      font-size: 0.75rem;
     }
     /* bot: center of member-left-of-wall = ((48+280)/2, 160) = (164, 160) */
     .m-bot { left: 164px; top: 160px; }
@@ -325,11 +355,43 @@
 
     <section class="hero">
       <h1>Security</h1>
-      <p>3 Levels でアクセスを分け、2 Runtimes で実行経路ごとの権限を決め、4 Boundaries で member cap を実現する。</p>
+      <p>agent がチームの一員のように実務を担いたい。その目的と安全性を両立する設計。</p>
     </section>
 
-    <!-- Figure -->
+    <!-- Objectives -->
     <section class="section">
+      <div class="section-label">01</div>
+      <h2 class="section-title">Objectives</h2>
+      <ul class="hero-list">
+        <li><span class="hl-title">自律性</span><span class="hl-sep">—</span><span class="hl-desc">人間の介入なしに動ける</span></li>
+        <li><span class="hl-title">実効性</span><span class="hl-sep">—</span><span class="hl-desc">本物のアクセス権で本物の仕事ができる</span></li>
+        <li><span class="hl-title">共有性</span><span class="hl-sep">—</span><span class="hl-desc">チーム全員で同じ agent を使える</span></li>
+      </ul>
+    </section>
+
+    <!-- Concepts -->
+    <section class="section">
+      <div class="section-label">02</div>
+      <h2 class="section-title">Concepts</h2>
+      <div class="prose">
+        <p>これらの目的と安全性を両立させるのがセキュリティの役割。</p>
+      </div>
+      <ul class="hero-list">
+        <li><span class="hl-title">シンプルな構造</span><span class="hl-sep">—</span><span class="hl-desc">3 Levels + 2 Runtimes + 4 Boundaries</span></li>
+        <li><span class="hl-title">共有の範囲 = 権限の範囲</span><span class="hl-sep">—</span><span class="hl-desc">誰と共有するかがそのまま権限のスコープを決める</span></li>
+        <li><span class="hl-title">cap 内の自由</span><span class="hl-sep">—</span><span class="hl-desc">境界の内側では制限しない</span></li>
+        <li><span class="hl-title">メカニカルな境界</span><span class="hl-sep">—</span><span class="hl-desc">信頼やルールではなく技術的メカニズムで壁を作る</span></li>
+        <li><span class="hl-title">変更への非同期の人間の介入</span><span class="hl-sep">—</span><span class="hl-desc">agent は自律的に動けるが、変更の反映は PR 経由で人間がレビューする</span></li>
+      </ul>
+    </section>
+
+    <!-- Overview -->
+    <section class="section">
+      <div class="section-label">03</div>
+      <h2 class="section-title">Overview</h2>
+      <div class="prose">
+        <p>Levels が情報の機密度を分け、Runtimes が実行経路ごとの到達範囲を決め、Boundaries がその境界を技術的に強制する。</p>
+      </div>
       <div class="fig">
         <div class="matryoshka">
           <!-- 3 boxes: external ⊃ member ⊃ admin -->
@@ -343,7 +405,7 @@
           <span class="m-level m-level-admin">admin</span>
 
           <!-- walls: dashed lines between boxes -->
-          <div class="m-wall-outer"><div class="m-wall-label"><span>Network</span></div></div>
+          <div class="m-wall-outer"><div class="m-wall-label"><span>Network</span><span class="m-wall-sep">+</span><span>Change</span></div></div>
           <div class="m-wall-inner"><div class="m-wall-label"><span>Process</span><span class="m-wall-sep">+</span><span>Change</span><span class="m-wall-sep">+</span><span>Auth</span></div></div>
 
           <!-- runtime markers -->
@@ -359,13 +421,13 @@
         </div>
       </div>
       <div class="prose">
-        <p>情報はマトリョーシカのような入れ子構造。bot は member の箱の中にいる。4 Boundaries がこの 2 つの壁を守る — <strong>Network</strong> が外側の壁（external ↔ member）、<strong>Process</strong>・<strong>Change</strong>・<strong>Auth</strong> が内側の壁（member ↔ admin）。</p>
+        <p>外側から external・member・admin。内側ほど機密性が高い。bot は member の中で動き、admin には届かない。local は admin まで届く。ゾーン間の破線が Boundary — 越境を防ぐ仕組み。</p>
       </div>
     </section>
 
     <!-- 3 Levels -->
     <section class="section">
-      <div class="section-label">01</div>
+      <div class="section-label">04</div>
       <h2 class="section-title">3 Levels</h2>
       <div class="rows">
         <div class="row">
@@ -388,7 +450,7 @@
 
     <!-- 2 Runtimes -->
     <section class="section">
-      <div class="section-label">02</div>
+      <div class="section-label">05</div>
       <h2 class="section-title">2 Runtimes</h2>
       <div class="rows">
         <div class="row">
@@ -407,7 +469,7 @@
 
     <!-- 4 Boundaries -->
     <section class="section">
-      <div class="section-label">03</div>
+      <div class="section-label">06</div>
       <h2 class="section-title">4 Boundaries</h2>
       <div class="rows">
         <div class="row">
