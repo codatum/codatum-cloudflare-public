@@ -139,6 +139,164 @@
       line-height: 1.5;
     }
 
+    /* --- Matryoshka figure --- */
+    /*
+      .fig = outermost box (padding: 32px 24px)
+      Canvas: 560 x 280
+
+      Margin pattern:
+        box → wall: 36px (hierarchy gap, clear separation)
+        wall → box: 12px (wall hugs what it protects)
+        wall internal line gap: 4px
+
+      External box:  inset: 0                                   label (5, 10)
+      Network wall:  inset: 36                                  (1 dashed line)
+      Member box:    inset: 48                                  label (53, 58)
+
+      P/C/A walls (from member: +36px on top/bot/right, bot space on left):
+        outer:  top:84 bot:84 left:280 right:84                 (3 lines, 4px gap)
+        middle: +4px inset
+        inner:  +8px inset
+      Admin box (from innermost wall: +12px):
+        top:104 bot:104 left:300 right:104                      label (109, 310)
+
+      bot:   ((48+280)/2, 160) = (164, 160) — member zone
+      local: ((300+456)/2, 160) = (378, 160) — admin zone
+
+      Wall labels: bottom-right outside each wall
+    */
+    .fig {
+      padding: 0 24px 24px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .matryoshka {
+      position: relative;
+      width: 560px;
+      height: 320px;
+      margin: 0 auto;
+    }
+
+    /* --- 3 boxes: containment, each labeled top-left (offset +5,+10) --- */
+    .m-external {
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .m-member {
+      position: absolute;
+      inset: 48px;
+      border: 1px solid rgba(113, 112, 255, 0.15);
+      border-radius: 6px;
+    }
+    .m-admin {
+      position: absolute;
+      top: 104px; bottom: 104px; left: 300px; right: 104px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 4px;
+      background: var(--bg-raised);
+    }
+
+    /* --- level labels: all top-left inside their box, same offset (5,10) --- */
+    .m-level {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+      letter-spacing: 0.04em;
+    }
+    .m-level-external { top: 5px;  left: 10px;  color: var(--text-quaternary); }
+    .m-level-member   { top: 53px; left: 58px;  color: rgba(113, 112, 255, 0.45); }
+    .m-level-admin    { top: 109px; left: 310px;  color: var(--text-quaternary); }
+
+    /* --- walls: dashed lines between boxes --- */
+    /* outer wall — Network (1 line): 36px from external */
+    .m-wall-outer {
+      position: absolute;
+      inset: 36px;
+      border: 1px dashed rgba(113, 112, 255, 0.2);
+      border-radius: 7px;
+    }
+    /* inner wall — Process/Change/Auth (3 lines, 4px gap): 36px from member on top/bot/right */
+    .m-wall-inner {
+      position: absolute;
+      top: 84px; bottom: 84px; left: 280px; right: 84px;
+      border: 1px dashed rgba(255, 255, 255, 0.08);
+      border-radius: 7px;
+    }
+    .m-wall-inner::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border: 1px dashed rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+    }
+    .m-wall-inner::after {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border: 1px dashed rgba(255, 255, 255, 0.08);
+      border-radius: 5px;
+    }
+
+    /* --- wall labels: all bottom-right outside their wall --- */
+    .m-wall-label {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 0.5625rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    /* shield icon: filled pentagon shape */
+    .m-wall-label::before {
+      content: '';
+      display: inline-block;
+      width: 8px; height: 10px;
+      clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
+      background: currentColor;
+      opacity: 0.5;
+      flex-shrink: 0;
+      position: relative;
+      top: -0.5px;
+    }
+    .m-wall-outer .m-wall-label {
+      bottom: -18px; right: 4px;
+      color: rgba(113, 112, 255, 0.4);
+    }
+    .m-wall-inner .m-wall-label {
+      bottom: -18px; right: 0px;
+      color: var(--text-quaternary);
+    }
+    .m-wall-sep {
+      opacity: 0.4;
+    }
+
+    /* --- runtime markers: bot (member zone) / local (admin zone) --- */
+    .m-marker {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .m-marker-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+    .m-marker-text {
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+    /* bot: center of member-left-of-wall = ((48+280)/2, 160) = (164, 160) */
+    .m-bot { left: 164px; top: 160px; }
+    .m-bot .m-marker-dot { background: rgba(113, 112, 255, 0.6); }
+    .m-bot .m-marker-text { color: rgba(113, 112, 255, 0.6); }
+    /* local: center of admin = ((300+456)/2, 160) = (378, 160) */
+    .m-local { left: 378px; top: 160px; }
+    .m-local .m-marker-dot { background: rgba(255, 255, 255, 0.35); }
+    .m-local .m-marker-text { color: var(--text-quaternary); }
+
     .footer {
       max-width: 720px;
       margin: 0 auto;
@@ -168,6 +326,41 @@
     <section class="hero">
       <h1>Security</h1>
       <p>3 Levels でアクセスを分け、2 Runtimes で実行経路ごとの権限を決め、4 Boundaries で member cap を実現する。</p>
+    </section>
+
+    <!-- Figure -->
+    <section class="section">
+      <div class="fig">
+        <div class="matryoshka">
+          <!-- 3 boxes: external ⊃ member ⊃ admin -->
+          <div class="m-external"></div>
+          <div class="m-member"></div>
+          <div class="m-admin"></div>
+
+          <!-- level labels: all top-left inside their box -->
+          <span class="m-level m-level-external">external</span>
+          <span class="m-level m-level-member">member</span>
+          <span class="m-level m-level-admin">admin</span>
+
+          <!-- walls: dashed lines between boxes -->
+          <div class="m-wall-outer"><div class="m-wall-label"><span>Network</span></div></div>
+          <div class="m-wall-inner"><div class="m-wall-label"><span>Process</span><span class="m-wall-sep">+</span><span>Change</span><span class="m-wall-sep">+</span><span>Auth</span></div></div>
+
+          <!-- runtime markers -->
+          <div class="m-marker m-bot">
+            <div class="m-marker-dot"></div>
+            <span class="m-marker-text">bot</span>
+          </div>
+          <div class="m-marker m-local">
+            <div class="m-marker-dot"></div>
+            <span class="m-marker-text">local</span>
+          </div>
+
+        </div>
+      </div>
+      <div class="prose">
+        <p>情報はマトリョーシカのような入れ子構造。bot は member の箱の中にいる。4 Boundaries がこの 2 つの壁を守る — <strong>Network</strong> が外側の壁（external ↔ member）、<strong>Process</strong>・<strong>Change</strong>・<strong>Auth</strong> が内側の壁（member ↔ admin）。</p>
+      </div>
     </section>
 
     <!-- 3 Levels -->
@@ -216,9 +409,6 @@
     <section class="section">
       <div class="section-label">03</div>
       <h2 class="section-title">4 Boundaries</h2>
-      <div class="prose">
-        <p>bot の member cap はインフラのレイヤーで実現している。各境界は独立しており、1 つが破られても残りが守る。</p>
-      </div>
       <div class="rows">
         <div class="row">
           <span class="row-label">Process</span>
@@ -234,7 +424,7 @@
         </div>
         <div class="row">
           <span class="row-label">Auth</span>
-          <span class="row-desc">Google Account の認可が member / admin の壁。credential の暗号化・復号を制御する</span>
+          <span class="row-desc">Google Account の認可が壁。credential の暗号化・復号を制御する</span>
         </div>
       </div>
       <div class="prose">
